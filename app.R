@@ -1,4 +1,3 @@
-
 library(googledrive)
 library(googlesheets4)
 library(shiny)
@@ -17,7 +16,6 @@ library(RColorBrewer)
 library(janitor)
 library(mxmaps)
 library(stringr)
-library(tm)
 library(wordcloud2)
 library(RColorBrewer)
 library(shinydashboard)
@@ -38,21 +36,36 @@ library(mxmaps)
 
 
 
+nb.cols <-13
+mycolors <- colorRampPalette(brewer.pal(8, "Dark2"))(nb.cols)
 
-# 
+
+nb.cols.129 <-129
+mycolors129 <- colorRampPalette(brewer.pal(8, "Dark2"))(nb.cols.129)
+
+
+nb.cols_2 <- 20
+bupu <- colorRampPalette(brewer.pal(8, "Set3"))(nb.cols_2)
+
+
+nb.cols_2 <- 20
+bupu_2 <- colorRampPalette(brewer.pal(8, "Paired"))(nb.cols_2)
+
+
 # drive_find(n_max = 6)
-# 1
- 
- # drive_download("codigo_violeta_bases.xlsx",overwrite = TRUE)
- # drive_download("reportes_llamadas_2021_2022.xlsx",overwrite = TRUE)
- # drive_download("reportes_llamadas_2019_2020.xlsx",overwrite = TRUE)
- # drive_download("medidas_ordenes",overwrite = TRUE)
+# 2
+# 
+# drive_download("codigo_violeta_bases.xlsx",overwrite = TRUE)
+# drive_download("2.reportes_llamadas_2021_2022.xlsx",overwrite = TRUE)
+# drive_download("1.reportes_llamadas_2019_2020.xlsx",overwrite = TRUE)
+# drive_download("medidas_ordenes",overwrite = TRUE)
+# drive_download("atenciones.xlsx",overwrite = TRUE)
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
- 
-# reportes_llamadas_2021_2022 <- read_excel("reportes_llamadas_2021_2022.xlsx")
-# reportes_llamadas_2019_2020 <- read_excel("reportes_llamadas_2019_2020.xlsx")
+
+# reportes_llamadas_2021_2022 <- read_excel("2.reportes_llamadas_2021_2022.xlsx")
+# reportes_llamadas_2019_2020 <- read_excel("1.reportes_llamadas_2019_2020.xlsx")
 # reportes_llamadas<-rbind(reportes_llamadas_2019_2020, reportes_llamadas_2021_2022)
 # 
 # setnames(reportes_llamadas, tolower(names(reportes_llamadas)))
@@ -69,96 +82,351 @@ library(mxmaps)
 # mutate(clasificación=case_when(
 #   clasificación=="Violencia contra la mujer"~ "Violencia contra las mujeres",
 #   clasificación=="Violencia de pareja"~ "Violencia de pareja",
-#   clasificación=="Violencia familiar"~ "Violencia familiar"))
+#   clasificación=="Violencia familiar"~ "Violencia familiar")) %>%
+#   mutate(
+#     month=case_when(
+#       month=="enero" ~ "Enero",
+#       month=="febrero" ~ "Febrero",
+#       month=="marzo" ~ "Marzo",
+#       month=="abril" ~ "Abril",
+#       month=="mayo" ~ "Mayo",
+#       month=="junio" ~ "Junio",
+#       month=="julio" ~ "Julio",
+#       month=="agosto" ~ "Agosto",
+#       month=="septiembre" ~ "Septiembre",
+#       month=="octubre" ~ "Octubre",
+#       month=="noviembre" ~ "Noviembre",
+#       month=="diciembre" ~ "Diciembre"),
+#     month=factor(
+#       month,levels=c("Enero", "Febrero", "Marzo","Abril", "Mayo", "Junio","Julio", "Agosto",
+#                      "Septiembre", "Octubre","Noviembre", "Diciembre")))
+# 
+# 
+# 
+# write.csv(reportes_llamadas, "reportes_llamadas_2.csv")
 
 
-# reportes_llamadas %>% group_by(year, cuatrimestre) %>% summarise(count=sum(count)) -> Nacional_total
-# entidad<- c("Acumulado nacional")
-# cbind(entidad, Nacional_total)->Nacional_total
-# names(Nacional_total)[names(Nacional_total) == "...1"] <- "entidad"
-# rbind(cd_total, Nacional_total)->cd_total
-#
-#write.csv(reportes_llamadas, "reportes_llamadas_2.csv")
-  
-st <- ymd("2019-01-01")
-en <- ymd("2022-07-31")
-dates <- seq.Date(from = st, to = en, by = 1)
+reportes_llamadas<- read.csv("reportes_llamadas_2.csv")
 
-reportes_llamadas<- read.csv("reportes_llamadas_2.csv") %>% 
+
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  - - - - - - - - - #
+
+# violencia_familiar_diario <- read_excel("codigo_violeta_bases.xlsx",sheet = "violencia_familiar_diario") %>%
+#   gather(key = "sexo", value = registro, 4:5) %>%
+#   mutate(sexo=case_when(
+#     sexo=="hombre"~"Hombres",
+#       sexo=="mujer"~"Mujeres"),
+#     zona=case_when(
+#       zona=="Distrito 1"~"AVGM",
+#       zona=="Distrito 8"~"Puerto Vallarta",
+#       zona=="Estado"~"Estado de Jalisco")) %>%
+#   filter(registro >=  0)
+# 
+# violencia_familiar_diario$fecha   <-as.POSIXct(violencia_familiar_diario$fecha)
+# violencia_familiar_diario$fecha   <-as.Date(violencia_familiar_diario$fecha,format="%Y-%m-%d")
+# violencia_familiar_diario$mes     <-format(as.Date(violencia_familiar_diario$fecha,format="%Y-%m-%d"), "%Y-%m")
+# violencia_familiar_diario$año     <-format(as.Date(violencia_familiar_diario$fecha,format="%Y-%m-%d"), "%Y")
+# violencia_familiar_diario$month   <-format(as.Date(violencia_familiar_diario$fecha,format="%Y-%m-%d"), "%B")
+# 
+# violencia_familiar_diario<-violencia_familiar_diario %>%
+#   mutate(
+#     month=case_when(
+#       month=="enero" ~ "Enero",
+#       month=="febrero" ~ "Febrero",
+#       month=="marzo" ~ "Marzo",
+#       month=="abril" ~ "Abril",
+#       month=="mayo" ~ "Mayo",
+#       month=="junio" ~ "Junio",
+#       month=="julio" ~ "Julio",
+#       month=="agosto" ~ "Agosto",
+#       month=="septiembre" ~ "Septiembre",
+#       month=="octubre" ~ "Octubre",
+#       month=="noviembre" ~ "Noviembre",
+#       month=="diciembre" ~ "Diciembre"),
+#     month=factor(month,
+#                  levels=c("Enero", "Febrero", "Marzo","Abril", "Mayo", "Junio",
+#                           "Julio", "Agosto", "Septiembre", "Octubre","Noviembre", "Diciembre")))
+# 
+#  write.csv(violencia_familiar_diario, "violencia_familiar_diario.csv")
+
+
+# reportes_llamadas_2021_2022 <- read_excel("2.reportes_llamadas_2021_2022.xlsx")
+# reportes_llamadas_2019_2020 <- read_excel("1.reportes_llamadas_2019_2020.xlsx")
+# reportes_llamadas<-rbind(reportes_llamadas_2019_2020, reportes_llamadas_2021_2022)
+# 
+# setnames(reportes_llamadas, tolower(names(reportes_llamadas)))
+# 
+# 
+# reportes_llamadas$fecha <-substr(reportes_llamadas$fecha, start = 1, stop = 10)
+# reportes_llamadas$fecha   <-as.POSIXct(reportes_llamadas$fecha)
+# reportes_llamadas$fecha   <-as.Date(reportes_llamadas$fecha,format="%Y-%m-%d")
+# reportes_llamadas$mes     <-format(as.Date(reportes_llamadas$fecha,format="%Y-%m-%d"), "%Y-%m")
+# reportes_llamadas$año     <-format(as.Date(reportes_llamadas$fecha,format="%Y-%m-%d"), "%Y")
+# reportes_llamadas$month     <-format(as.Date(reportes_llamadas$fecha,format="%Y-%m-%d"), "%B")
+# 
+# reportes_llamadas <- reportes_llamadas %>%
+# mutate(clasificación=case_when(
+#   clasificación=="Violencia contra la mujer"~ "Violencia contra las mujeres",
+#   clasificación=="Violencia de pareja"~ "Violencia de pareja",
+#   clasificación=="Violencia familiar"~ "Violencia familiar")) %>%
+#   mutate(
+#     month=case_when(
+#       month=="enero" ~ "Enero",
+#       month=="febrero" ~ "Febrero",
+#       month=="marzo" ~ "Marzo",
+#       month=="abril" ~ "Abril",
+#       month=="mayo" ~ "Mayo",
+#       month=="junio" ~ "Junio",
+#       month=="julio" ~ "Julio",
+#       month=="agosto" ~ "Agosto",
+#       month=="septiembre" ~ "Septiembre",
+#       month=="octubre" ~ "Octubre",
+#       month=="noviembre" ~ "Noviembre",
+#       month=="diciembre" ~ "Diciembre"),
+#     month=factor(
+#       month,levels=c("Enero", "Febrero", "Marzo","Abril", "Mayo", "Junio","Julio", "Agosto",
+#                      "Septiembre", "Octubre","Noviembre", "Diciembre")))
+# 
+# 
+# 
+# write.csv(reportes_llamadas, "reportes_llamadas_2.csv")
+
+
+reportes_llamadas<- read.csv("reportes_llamadas_2.csv")
+
+
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  - - - - - - - - - #
+
+# violencia_familiar_diario <- read_excel("codigo_violeta_bases.xlsx",sheet = "violencia_familiar_diario") %>%
+#   gather(key = "sexo", value = registro, 4:5) %>%
+#   mutate(sexo=case_when(
+#     sexo=="hombre"~"Hombres",
+#       sexo=="mujer"~"Mujeres"),
+#     zona=case_when(
+#       zona=="Distrito 1"~"AVGM",
+#       zona=="Distrito 8"~"Puerto Vallarta",
+#       zona=="Estado"~"Estado de Jalisco")) %>%
+#   filter(registro >=  0)
+# 
+# violencia_familiar_diario$fecha   <-as.POSIXct(violencia_familiar_diario$fecha)
+# violencia_familiar_diario$fecha   <-as.Date(violencia_familiar_diario$fecha,format="%Y-%m-%d")
+# violencia_familiar_diario$mes     <-format(as.Date(violencia_familiar_diario$fecha,format="%Y-%m-%d"), "%Y-%m")
+# violencia_familiar_diario$año     <-format(as.Date(violencia_familiar_diario$fecha,format="%Y-%m-%d"), "%Y")
+# violencia_familiar_diario$month   <-format(as.Date(violencia_familiar_diario$fecha,format="%Y-%m-%d"), "%B")
+# 
+# violencia_familiar_diario<-violencia_familiar_diario %>%
+#   mutate(
+#     month=case_when(
+#       month=="enero" ~ "Enero",
+#       month=="febrero" ~ "Febrero",
+#       month=="marzo" ~ "Marzo",
+#       month=="abril" ~ "Abril",
+#       month=="mayo" ~ "Mayo",
+#       month=="junio" ~ "Junio",
+#       month=="julio" ~ "Julio",
+#       month=="agosto" ~ "Agosto",
+#       month=="septiembre" ~ "Septiembre",
+#       month=="octubre" ~ "Octubre",
+#       month=="noviembre" ~ "Noviembre",
+#       month=="diciembre" ~ "Diciembre"),
+#     month=factor(month,
+#                  levels=c("Enero", "Febrero", "Marzo","Abril", "Mayo", "Junio",
+#                           "Julio", "Agosto", "Septiembre", "Octubre","Noviembre", "Diciembre")))
+# 
+#  write.csv(violencia_familiar_diario, "violencia_familiar_diario.csv")
+
+# reportes_llamadas_2021_2022 <- read_excel("2.reportes_llamadas_2021_2022.xlsx")
+# reportes_llamadas_2019_2020 <- read_excel("1.reportes_llamadas_2019_2020.xlsx")
+# reportes_llamadas<-rbind(reportes_llamadas_2019_2020, reportes_llamadas_2021_2022)
+# 
+# setnames(reportes_llamadas, tolower(names(reportes_llamadas)))
+# 
+# 
+# reportes_llamadas$fecha <-substr(reportes_llamadas$fecha, start = 1, stop = 10)
+# reportes_llamadas$fecha   <-as.POSIXct(reportes_llamadas$fecha)
+# reportes_llamadas$fecha   <-as.Date(reportes_llamadas$fecha,format="%Y-%m-%d")
+# reportes_llamadas$mes     <-format(as.Date(reportes_llamadas$fecha,format="%Y-%m-%d"), "%Y-%m")
+# reportes_llamadas$año     <-format(as.Date(reportes_llamadas$fecha,format="%Y-%m-%d"), "%Y")
+# reportes_llamadas$month     <-format(as.Date(reportes_llamadas$fecha,format="%Y-%m-%d"), "%B")
+# 
+# reportes_llamadas <- reportes_llamadas %>%
+# mutate(clasificación=case_when(
+#   clasificación=="Violencia contra la mujer"~ "Violencia contra las mujeres",
+#   clasificación=="Violencia de pareja"~ "Violencia de pareja",
+#   clasificación=="Violencia familiar"~ "Violencia familiar")) %>%
+#   mutate(
+#     month=case_when(
+#       month=="enero" ~ "Enero",
+#       month=="febrero" ~ "Febrero",
+#       month=="marzo" ~ "Marzo",
+#       month=="abril" ~ "Abril",
+#       month=="mayo" ~ "Mayo",
+#       month=="junio" ~ "Junio",
+#       month=="julio" ~ "Julio",
+#       month=="agosto" ~ "Agosto",
+#       month=="septiembre" ~ "Septiembre",
+#       month=="octubre" ~ "Octubre",
+#       month=="noviembre" ~ "Noviembre",
+#       month=="diciembre" ~ "Diciembre"),
+#     month=factor(
+#       month,levels=c("Enero", "Febrero", "Marzo","Abril", "Mayo", "Junio","Julio", "Agosto",
+#                      "Septiembre", "Octubre","Noviembre", "Diciembre")))
+# 
+# 
+# 
+# write.csv(reportes_llamadas, "reportes_llamadas_2.csv")
+
+
+reportes_llamadas<- read.csv("reportes_llamadas_2.csv")
+
+
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  - - - - - - - - - #
+
+# violencia_familiar_diario <- read_excel("codigo_violeta_bases.xlsx",sheet = "violencia_familiar_diario") %>%
+#   gather(key = "sexo", value = registro, 4:5) %>%
+#   mutate(sexo=case_when(
+#     sexo=="hombre"~"Hombres",
+#       sexo=="mujer"~"Mujeres"),
+#     zona=case_when(
+#       zona=="Distrito 1"~"AVGM",
+#       zona=="Distrito 8"~"Puerto Vallarta",
+#       zona=="Estado"~"Estado de Jalisco")) %>%
+#   filter(registro >=  0)
+# 
+# violencia_familiar_diario$fecha   <-as.POSIXct(violencia_familiar_diario$fecha)
+# violencia_familiar_diario$fecha   <-as.Date(violencia_familiar_diario$fecha,format="%Y-%m-%d")
+# violencia_familiar_diario$mes     <-format(as.Date(violencia_familiar_diario$fecha,format="%Y-%m-%d"), "%Y-%m")
+# violencia_familiar_diario$año     <-format(as.Date(violencia_familiar_diario$fecha,format="%Y-%m-%d"), "%Y")
+# violencia_familiar_diario$month   <-format(as.Date(violencia_familiar_diario$fecha,format="%Y-%m-%d"), "%B")
+# 
+# violencia_familiar_diario<-violencia_familiar_diario %>%
+#   mutate(
+#     month=case_when(
+#       month=="enero" ~ "Enero",
+#       month=="febrero" ~ "Febrero",
+#       month=="marzo" ~ "Marzo",
+#       month=="abril" ~ "Abril",
+#       month=="mayo" ~ "Mayo",
+#       month=="junio" ~ "Junio",
+#       month=="julio" ~ "Julio",
+#       month=="agosto" ~ "Agosto",
+#       month=="septiembre" ~ "Septiembre",
+#       month=="octubre" ~ "Octubre",
+#       month=="noviembre" ~ "Noviembre",
+#       month=="diciembre" ~ "Diciembre"),
+#     month=factor(month,
+#                  levels=c("Enero", "Febrero", "Marzo","Abril", "Mayo", "Junio",
+#                           "Julio", "Agosto", "Septiembre", "Octubre","Noviembre", "Diciembre")))
+# 
+#  write.csv(violencia_familiar_diario, "violencia_familiar_diario.csv")
+
+# reportes_llamadas_2021_2022 <- read_excel("2.reportes_llamadas_2021_2022.xlsx")
+# reportes_llamadas_2019_2020 <- read_excel("1.reportes_llamadas_2019_2020.xlsx")
+# reportes_llamadas<-rbind(reportes_llamadas_2019_2020, reportes_llamadas_2021_2022)
+# 
+# setnames(reportes_llamadas, tolower(names(reportes_llamadas)))
+# 
+# 
+# reportes_llamadas$fecha <-substr(reportes_llamadas$fecha, start = 1, stop = 10)
+# reportes_llamadas$fecha   <-as.POSIXct(reportes_llamadas$fecha)
+# reportes_llamadas$fecha   <-as.Date(reportes_llamadas$fecha,format="%Y-%m-%d")
+# reportes_llamadas$mes     <-format(as.Date(reportes_llamadas$fecha,format="%Y-%m-%d"), "%Y-%m")
+# reportes_llamadas$año     <-format(as.Date(reportes_llamadas$fecha,format="%Y-%m-%d"), "%Y")
+# reportes_llamadas$month     <-format(as.Date(reportes_llamadas$fecha,format="%Y-%m-%d"), "%B")
+# 
+# reportes_llamadas <- reportes_llamadas %>%
+# mutate(clasificación=case_when(
+#   clasificación=="Violencia contra la mujer"~ "Violencia contra las mujeres",
+#   clasificación=="Violencia de pareja"~ "Violencia de pareja",
+#   clasificación=="Violencia familiar"~ "Violencia familiar")) %>%
+#   mutate(
+#     month=case_when(
+#       month=="enero" ~ "Enero",
+#       month=="febrero" ~ "Febrero",
+#       month=="marzo" ~ "Marzo",
+#       month=="abril" ~ "Abril",
+#       month=="mayo" ~ "Mayo",
+#       month=="junio" ~ "Junio",
+#       month=="julio" ~ "Julio",
+#       month=="agosto" ~ "Agosto",
+#       month=="septiembre" ~ "Septiembre",
+#       month=="octubre" ~ "Octubre",
+#       month=="noviembre" ~ "Noviembre",
+#       month=="diciembre" ~ "Diciembre"),
+#     month=factor(
+#       month,levels=c("Enero", "Febrero", "Marzo","Abril", "Mayo", "Junio","Julio", "Agosto",
+#                      "Septiembre", "Octubre","Noviembre", "Diciembre")))
+# 
+# 
+# 
+# write.csv(reportes_llamadas, "reportes_llamadas_2.csv")
+
+
+reportes_llamadas<- read.csv("reportes_llamadas_2.csv")
+
+
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  - - - - - - - - - #
+
+# violencia_familiar_diario <- read_excel("codigo_violeta_bases.xlsx",sheet = "violencia_familiar_diario") %>%
+#   gather(key = "sexo", value = registro, 4:5) %>%
+#   mutate(sexo=case_when(
+#     sexo=="hombre"~"Hombres",
+#       sexo=="mujer"~"Mujeres"),
+#     zona=case_when(
+#       zona=="Distrito 1"~"AVGM",
+#       zona=="Distrito 8"~"Puerto Vallarta",
+#       zona=="Estado"~"Estado de Jalisco")) %>%
+#   filter(registro >=  0)
+# 
+# violencia_familiar_diario$fecha   <-as.POSIXct(violencia_familiar_diario$fecha)
+# violencia_familiar_diario$fecha   <-as.Date(violencia_familiar_diario$fecha,format="%Y-%m-%d")
+# violencia_familiar_diario$mes     <-format(as.Date(violencia_familiar_diario$fecha,format="%Y-%m-%d"), "%Y-%m")
+# violencia_familiar_diario$año     <-format(as.Date(violencia_familiar_diario$fecha,format="%Y-%m-%d"), "%Y")
+# violencia_familiar_diario$month   <-format(as.Date(violencia_familiar_diario$fecha,format="%Y-%m-%d"), "%B")
+# 
+# violencia_familiar_diario<-violencia_familiar_diario %>%
+#   mutate(
+#     month=case_when(
+#       month=="enero" ~ "Enero",
+#       month=="febrero" ~ "Febrero",
+#       month=="marzo" ~ "Marzo",
+#       month=="abril" ~ "Abril",
+#       month=="mayo" ~ "Mayo",
+#       month=="junio" ~ "Junio",
+#       month=="julio" ~ "Julio",
+#       month=="agosto" ~ "Agosto",
+#       month=="septiembre" ~ "Septiembre",
+#       month=="octubre" ~ "Octubre",
+#       month=="noviembre" ~ "Noviembre",
+#       month=="diciembre" ~ "Diciembre"),
+#     month=factor(month,
+#                  levels=c("Enero", "Febrero", "Marzo","Abril", "Mayo", "Junio",
+#                           "Julio", "Agosto", "Septiembre", "Octubre","Noviembre", "Diciembre")))
+# 
+#  write.csv(violencia_familiar_diario, "violencia_familiar_diario.csv")
+
+
+
+
+violencia_familiar_diario<- read.csv("violencia_familiar_diario.csv") %>% 
   mutate(
-    month=case_when(
-      month=="enero" ~ "Enero",
-      month=="febrero" ~ "Febrero",
-      month=="marzo" ~ "Marzo",
-      month=="abril" ~ "Abril",
-      month=="mayo" ~ "Mayo",
-      month=="junio" ~ "Junio",
-      month=="julio" ~ "Julio",
-      month=="agosto" ~ "Agosto",
-      month=="septiembre" ~ "septiembre",
-      month=="octubre" ~ "Octubre",
-      month=="noviembre" ~ "Noviembre",
-      month=="diciembre" ~ "Diciembre"),
     month=factor(
       month,levels=c("Enero", "Febrero", "Marzo","Abril", "Mayo", "Junio","Julio", "Agosto",
                      "Septiembre", "Octubre","Noviembre", "Diciembre")))
 
 
-  
 
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  - - - - - - - - - #
-violencia_familiar_diario <- read_excel("codigo_violeta_bases.xlsx",sheet = "violencia_familiar_diario") %>% 
-  gather(key = "sexo", value = registro, 4:5) %>% 
-  mutate(sexo=case_when(
-    sexo=="hombre"~"Hombres",
-      sexo=="mujer"~"Mujeres"),
-    zona=case_when(
-      zona=="Distrito 1"~"AVGM",
-      zona=="Distrito 8"~"Puerto Vallarta",
-      zona=="Estado"~"Estado de Jalisco"
-    ))
-  # mutate(text = paste("Año: ", año,
-  #                     "\nMes: ", mes,
-  #                     "\nSexo: ", sexo,
-  #                     "\nZona: ", zona,
-  #                     "\nTotal de denuncias: ", comma(registro, accuracy = 1), sep=""))
-  
-
-#violencia_familiar_diario$fecha <-substr(violencia_familiar_diario$fecha, start = 1, stop = 10)
-violencia_familiar_diario$fecha   <-as.POSIXct(violencia_familiar_diario$fecha) 
-violencia_familiar_diario$fecha   <-as.Date(violencia_familiar_diario$fecha,format="%Y-%m-%d")
-violencia_familiar_diario$mes     <-format(as.Date(violencia_familiar_diario$fecha,format="%Y-%m-%d"), "%Y-%m")
-violencia_familiar_diario$año     <-format(as.Date(violencia_familiar_diario$fecha,format="%Y-%m-%d"), "%Y")
-violencia_familiar_diario$month   <-format(as.Date(violencia_familiar_diario$fecha,format="%Y-%m-%d"), "%B")
-
-violencia_familiar_diario<-violencia_familiar_diario %>%
-  mutate(
-    month=case_when(
-      month=="enero" ~ "Enero",
-      month=="febrero" ~ "Febrero",
-      month=="marzo" ~ "Marzo",
-      month=="abril" ~ "Abril",
-      month=="mayo" ~ "Mayo",
-      month=="junio" ~ "Junio",
-      month=="julio" ~ "Julio",
-      month=="agosto" ~ "Agosto",
-      month=="septiembre" ~ "septiembre",
-      month=="octubre" ~ "Octubre",
-      month=="noviembre" ~ "Noviembre",
-      month=="diciembre" ~ "Diciembre"),
-    month=factor(month,
-                 levels=c("Enero", "Febrero", "Marzo","Abril", "Mayo", "Junio",
-                          "Julio", "Agosto", "Septiembre", "Octubre","Noviembre", "Diciembre")))
-
-
-#violencia_familiar_diario$registro <- abs(violencia_familiar_diario$registro)
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-#Ordenes y medidas
 
-
+# Ordenes y medidas
 
 library(readxl)
+
 medidas_ordenes_estatal <- read_excel("medidas_ordenes.xlsx", sheet = "estatal")
 medidas_ordenes_municipal <- read_excel("medidas_ordenes.xlsx", sheet = "municipal") %>% 
   mutate(
@@ -176,8 +444,8 @@ medidas_ordenes_municipal <- read_excel("medidas_ordenes.xlsx", sheet = "municip
     #   mes=="noviembre" ~ "Noviembre",
     #   mes=="diciembre" ~ "Diciembre"),
     mes=factor(mes,
-                 levels=c("Enero", "Febrero", "Marzo","Abril", "Mayo", "Junio",
-                          "Julio", "Agosto", "Septiembre", "Octubre","Noviembre", "Diciembre")))
+               levels=c("Enero", "Febrero", "Marzo","Abril", "Mayo", "Junio",
+                        "Julio", "Agosto", "Septiembre", "Octubre","Noviembre", "Diciembre")))
 
 
 
@@ -194,8 +462,8 @@ medidas_ordenes_municipal %>%
   pivot_longer(cols=c("ordenes","medidas"),
                names_to = "tipo",
                values_to = "total") ->medidas_y_ordenes
-  
-  
+
+
 medidas_y_ordenes %>%  filter(tipo=="medidas", año==2019)->medidas_2019
 medidas_y_ordenes %>%  filter(tipo=="medidas", año==2020)->medidas_2020
 medidas_y_ordenes %>%  filter(tipo=="medidas", año==2021)->medidas_2021
@@ -215,7 +483,6 @@ medidas_2020$value<- medidas_2020$total
 medidas_2021$value<- medidas_2021$total
 medidas_2022$value<- medidas_2022$total
 
-
 medidas_2019<- medidas_2019 %>% filter(state_name=="Jalisco")
 medidas_2020<- medidas_2020 %>% filter(state_name=="Jalisco")
 medidas_2021<- medidas_2021 %>% filter(state_name=="Jalisco")
@@ -223,17 +490,10 @@ medidas_2022<- medidas_2022 %>% filter(state_name=="Jalisco")
 
 #_______________________________________________________________________________#
 
-
-
-
-
-
-medidas_y_ordenes %>%  filter(tipo=="medidas", año==2019)->ordenes_2019
-medidas_y_ordenes %>%  filter(tipo=="medidas", año==2020)->ordenes_2020
-medidas_y_ordenes %>%  filter(tipo=="medidas", año==2021)->ordenes_2021
-medidas_y_ordenes %>%  filter(tipo=="medidas", año==2022)->ordenes_2022
-
-
+medidas_y_ordenes %>%  filter(tipo=="ordenes", año==2019)->ordenes_2019
+medidas_y_ordenes %>%  filter(tipo=="ordenes", año==2020)->ordenes_2020
+medidas_y_ordenes %>%  filter(tipo=="ordenes", año==2021)->ordenes_2021
+medidas_y_ordenes %>%  filter(tipo=="ordenes", año==2022)->ordenes_2022
 
 # df_mxmunicipio_2020<-df_mxmunicipio_2020%>% filter(state_name=="Jalisco")
 
@@ -246,7 +506,6 @@ ordenes_2019$value<- ordenes_2019$total
 ordenes_2020$value<- ordenes_2020$total
 ordenes_2021$value<- ordenes_2021$total
 ordenes_2022$value<- ordenes_2022$total
-
 
 ordenes_2019<- ordenes_2019 %>% filter(state_name=="Jalisco")
 ordenes_2020<- ordenes_2020 %>% filter(state_name=="Jalisco")
@@ -261,138 +520,121 @@ ordenes_2022<- ordenes_2022 %>% filter(state_name=="Jalisco")
 
 
 
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-`Region Norte`<- c("Bolaños", "Chimaltitán", "Colotlán", "Huejúcar", "Huejuquilla el Alto",
-                   "Mezquitic", "San Martín de Bolaños", "Santa María de los Ángeles", "Totatiche", "Villa Guerrero")
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-`Region Altos Norte`<- c("Encarnación de Díaz", "Lagos de Moreno", "Ojuelos de Jalisco",
-                         "San Diego de Alejandría", "San Juan de los Lagos", "Teocaltiche",
-                         "Unión de San Antonio", "Villa Hidalgo")
+# `Región Norte`<- c("Bolaños", "Chimaltitán", "Colotlán", "Huejúcar", "Huejuquilla el Alto",
+#                    "Mezquitic", "San Martín de Bolaños", "Santa María de los Ángeles", "Totatiche", "Villa Guerrero")
+# 
+# `Región Altos Norte`<- c("Encarnación de Díaz", "Lagos de Moreno", "Ojuelos de Jalisco",
+#                          "San Diego de Alejandría", "San Juan de los Lagos", "Teocaltiche",
+#                          "Unión de San Antonio", "Villa Hidalgo")
+# 
+# `Región Altos Sur`<- c("Acatic", "Arandas", "Cañadas de Obregón", "Jalostotitlán", "Jesús María",
+#                        "Mexticacán", "San Ignacio Cerro Gordo", "San Julián", "San Miguel el Alto",
+#                        "Tepatitlán de Morelos", "Valle de Guadalupe", "Yahualica de González Gallo")
+# 
+# `Región Ciénega`<- c("Atotonilco el Alto", "Ayotlán", "Degollado", "Jamay", "La Barca", "Ocotlán",
+#                      "Poncitlán", "Tototlán", "Zapotlán del Rey")
+# 
+# 
+# `Región Sureste`<- c("Chapala", "Concepción de Buenos Aires", "Jocotepec", "La Manzanilla de la Paz",
+#                      "Mazamitla", "Quitupan", "Santa María del Oro", "Tizapán el Alto",
+#                      "Tuxcueca","Valle de Juárez")
+# 
+# 
+# `Región Sur`<- c("Gómez Farías", "Jilotlán de los Dolores", "Pihuamo", "San Gabriel",
+#                  "Tamazula de Gordiano", "Tecalitlán", "Tolimán", "Tonila", "Tuxpan",
+#                  "Zapotiltic", "Zapotitlán de Vadillo", "Zapotlán el Grande")
+# 
+# `Región Sierra de Amula`<- c("Atengo", "Autlán de Navarro", "Ayutla", "Chiquilistlán",
+#                              "Cuautla", "Ejutla", "El Grullo", "El Limón", "Juchitlán",
+#                              "Tecolotlán", "Tenamaxtlán", "Tonaya", "Tuxcacuesco", "Unión de Tula")
+# 
+# 
+# `Región Costa Sur`<- c("Casimiro Castillo", "Cihuatlán", "Cuautitlán de García Barragán",
+#                        "La Huerta", "Tomatlán", "Villa Purificación")
+# 
+# 
+# 
+# `Región Costa-Sierra Occidental`<- c("Atenguillo", "Cabo Corrientes", "Guachinango",
+#                                      "Mascota", "Mixtlán", "Puerto Vallarta",
+#                                      "San Sebastián del Oeste", "Talpa de Allende")
+# 
+# 
+# 
+# `Región Valles`<- c("Ahualulco de Mercado", "Amatitán", "Ameca", "El Arenal",
+#                     "Etzatlán", "Hostotipaquillo", "Magdalena",
+#                     "San Juanito de Escobedo", "San Marcos", "Tala",
+#                     "Tequila", "Teuchitlán")
+# 
+# 
+# `Región Lagunas`<- c("Acatlán de Juárez", "Amacueca", "Atemajac de Brizuela",
+#                      "Atoyac", "Cocula", "San Martín Hidalgo", "Sayula",
+#                      "Tapalpa", "Techaluta de Montenegro", "Teocuitatlán de Corona",
+#                      "Villa Corona", "Zacoalco de Torres")
+# 
+# 
+# `Región Centro`<- c("Cuquío", "El Salto", "Guadalajara", "Ixtlahuacán de los Membrillos",
+#                     "Ixtlahuacán del Río", "Juanacatlán", "San Cristóbal de la Barranca",
+#                     "San Pedro Tlaquepaque", "Tlajomulco de Zúñiga", "Tonalá", "Zapopan",
+#                     "Zapotlanejo")
+# 
+# 
+# 
+# 
+# #Carpetas
+# Regiones<-read.csv("IDM_NM_sep22.csv", encoding="latin1", check.names = T) %>%
+#   filter(Subtipo.de.delito %in% c("Abuso sexual", "Acoso sexual", "Hostigamiento sexual",
+#                                   "Violación simple", "Violación equiparada", "Feminicidio",
+#                                   "Violencia familiar",
+#                                   "Violencia de género en todas sus modalidades distinta a la violencia familiar"),
+#          Entidad=="Jalisco") %>%
+#   mutate(Región = case_when(
+#     Municipio %in% `Región Norte` ~ "Región Norte",
+#     Municipio %in% `Región Altos Norte` ~ "Región Altos Norte",
+#     Municipio %in% `Región Altos Sur` ~ "Región Altos Sur",
+#     Municipio %in% `Región Ciénega` ~ "Región Ciénega",
+#     Municipio %in% `Región Sureste` ~ "Región Sureste",
+#     Municipio %in% `Región Sur` ~ "Región Sur",
+#     Municipio %in% `Región Sierra de Amula` ~ "Región Sierra de Amula",
+#     Municipio %in% `Región Costa Sur` ~ "Región Costa Sur",
+#     Municipio %in% `Región Costa-Sierra Occidental` ~ "Región Costa-Sierra Occidental",
+#     Municipio %in% `Región Valles` ~ "Región Valles",
+#     Municipio %in% `Región Lagunas` ~ "Región Lagunas",
+#     Municipio %in% `Región Centro` ~ "Región Centro")) %>%
+#   group_by(Año, Región, Subtipo.de.delito) %>%
+#   summarise(ene=sum(Enero, na.rm = T),
+#             feb=sum(Febrero, na.rm = T),
+#             mar=sum(Marzo, na.rm = T),
+#             abr=sum(Abril, na.rm = T),
+#             may=sum(Mayo, na.rm = T),
+#             jun=sum(Junio, na.rm = T),
+#             jul=sum(Julio, na.rm = T),
+#             ago=sum(Agosto, na.rm = T),
+#             sep=sum(Septiembre, na.rm = T),
+#             oct=sum(Octubre, na.rm = T),
+#             nov=sum(Noviembre, na.rm = T),
+#             dic=sum(Diciembre, na.rm = T),
+#             Total=sum(ene+ feb+ mar+ abr+
+#                         may+ jun + jul+ ago+
+#                         sep+ oct+ nov+ dic))
+# 
+# write.csv(Regiones, "Regiones.csv")
 
-`Region Altos Sur`<- c("Acatic", "Arandas", "Cañadas de Obregón", "Jalostotitlán", "Jesús María",
-                       "Mexticacán", "San Ignacio Cerro Gordo", "San Julián", "San Miguel el Alto",
-                       "Tepatitlán de Morelos", "Valle de Guadalupe", "Yahualica de González Gallo")
-
-`Region Ciénega`<- c("Atotonilco el Alto", "Ayotlán", "Degollado", "Jamay", "La Barca", "Ocotlán",
-                     "Poncitlán", "Tototlán", "Zapotlán del Rey")
-
-
-`Region Sureste`<- c("Chapala", "Concepción de Buenos Aires", "Jocotepec", "La Manzanilla de la Paz",
-                     "Mazamitla", "Quitupan", "Santa María del Oro", "Tizapán el Alto",
-                     "Tuxcueca","Valle de Juárez")
-
-
-`Region Sur`<- c("Gómez Farías", "Jilotlán de los Dolores", "Pihuamo", "San Gabriel",
-                 "Tamazula de Gordiano", "Tecalitlán", "Tolimán", "Tonila", "Tuxpan",
-                 "Zapotiltic", "Zapotitlán de Vadillo", "Zapotlán el Grande")
-
-`Region Sierra de Amula`<- c("Atengo", "Autlán de Navarro", "Ayutla", "Chiquilistlán",
-                             "Cuautla", "Ejutla", "El Grullo", "El Limón", "Juchitlán",
-                             "Tecolotlán", "Tenamaxtlán", "Tonaya", "Tuxcacuesco", "Unión de Tula")
-
-
-`Region Costa Sur`<- c("Casimiro Castillo", "Cihuatlán", "Cuautitlán de García Barragán",
-                       "La Huerta", "Tomatlán", "Villa Purificación")
-
-
-
-`Region Costa-Sierra Occidental`<- c("Atenguillo", "Cabo Corrientes", "Guachinango",
-                                     "Mascota", "Mixtlán", "Puerto Vallarta",
-                                     "San Sebastián del Oeste", "Talpa de Allende")
-
-
-
-`Region Valles`<- c("Ahualulco de Mercado", "Amatitán", "Ameca", "El Arenal",
-                    "Etzatlán", "Hostotipaquillo", "Magdalena",
-                    "San Juanito de Escobedo", "San Marcos", "Tala",
-                    "Tequila", "Teuchitlán")
-
-
-`Region Lagunas`<- c("Acatlán de Juárez", "Amacueca", "Atemajac de Brizuela",
-                     "Atoyac", "Cocula", "San Martín Hidalgo", "Sayula",
-                     "Tapalpa", "Techaluta de Montenegro", "Teocuitatlán de Corona",
-                     "Villa Corona", "Zacoalco de Torres")
-
-
-`Region Centro`<- c("Cuquío", "El Salto", "Guadalajara", "Ixtlahuacán de los Membrillos",
-                    "Ixtlahuacán del Río", "Juanacatlán", "San Cristóbal de la Barranca",
-                    "San Pedro Tlaquepaque", "Tlajomulco de Zúñiga", "Tonalá", "Zapopan",
-                    "Zapotlanejo")
-
-
-
-
-#Carpetas
-regiones<-read.csv("IDM_NM_jun22.csv", encoding="latin1", check.names = T) %>% 
-# #names(regiones)[names(regiones) == "A\xf1o"] <- "Año"
-# names(regiones)[names(regiones) == "Subtipo de delito"] <- "Subtipo.de.delito"
-
-# regiones<-regiones%>% 
-  filter(Subtipo.de.delito %in% c("Abuso sexual", "Acoso sexual", "Hostigamiento sexual",
-                                  "Violación simple", "Violación equiparada", "Feminicidio", 
-                                  "Violencia familiar", 
-                                  "Violencia de género en todas sus modalidades distinta a la violencia familiar"),
-         Entidad=="Jalisco") %>% 
-  mutate(Region = case_when(
-    Municipio %in% `Region Norte` ~ "Region Norte",
-    Municipio %in% `Region Altos Norte` ~ "Region Altos Norte",
-    Municipio %in% `Region Altos Sur` ~ "Region Altos Sur",
-    Municipio %in% `Region Ciénega` ~ "Region Ciénega",
-    Municipio %in% `Region Sureste` ~ "Region Sureste",
-    Municipio %in% `Region Sur` ~ "Region Sur",
-    Municipio %in% `Region Sierra de Amula` ~ "Region Sierra de Amula",
-    Municipio %in% `Region Costa Sur` ~ "Region Costa Sur",
-    Municipio %in% `Region Costa-Sierra Occidental` ~ "Region Costa-Sierra Occidental",
-    Municipio %in% `Region Valles` ~ "Region Valles",
-    Municipio %in% `Region Lagunas` ~ "Region Lagunas",
-    Municipio %in% `Region Centro` ~ "Region Centro")) %>% 
-  group_by(Año, Region, Subtipo.de.delito) %>%
-  summarise(ene=sum(Enero, na.rm = T),
-            feb=sum(Febrero, na.rm = T),
-            mar=sum(Marzo, na.rm = T),
-            abr=sum(Abril, na.rm = T),
-            may=sum(Mayo, na.rm = T),
-            jun=sum(Junio, na.rm = T),
-            jul=sum(Julio, na.rm = T),
-            ago=sum(Agosto, na.rm = T),
-            sep=sum(Septiembre, na.rm = T),
-            oct=sum(Octubre, na.rm = T),
-            nov=sum(Noviembre, na.rm = T),
-            dic=sum(Diciembre, na.rm = T),
-            Total=sum(ene+ feb+ mar+ abr+
-                        may+ jun + jul+ ago+
-                        sep+ oct+ nov+ dic))
-
+Regiones<-read.csv("Regiones.csv", encoding="latin-1", check.names = T) 
 
 
 # - - - -  - - - - - - -  - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+municipios_2<-read.csv("IDM_NM_sep22.csv",check.names = T, encoding = "latin1") %>%
+  filter(Entidad=="Jalisco",
+    Subtipo.de.delito %in% c("Abuso sexual", "Acoso sexual", "Hostigamiento sexual",
+                                  "Violación simple", "Violación equiparada", "Feminicidio",
+                                  "Violencia familiar",
+                                  "Violencia de género en todas sus modalidades distinta a la violencia familiar"))
 
-
-municipios<-read.csv("IDM_NM_jun22.csv",check.names = T, encoding = "latin1") %>% 
-# #names(municipios)[names(municipios) == "A\xf1o"] <- "Año"
-# names(municipios)[names(municipios) == "Subtipo de delito"] <- "Subtipo.de.delito"
-# 
-# municipios<-municipios %>% 
-  filter(Subtipo.de.delito %in% c("Abuso sexual", "Acoso sexual", "Hostigamiento sexual",
-                                  "Violación simple", "Violación equiparada", "Feminicidio", 
-                                  "Violencia familiar", 
-                                  "Violencia de género en todas sus modalidades distinta a la violencia familiar"),
-         Entidad=="Jalisco") %>% 
-  mutate(Region = case_when(
-    Municipio %in% `Region Norte` ~ "Region Norte",
-    Municipio %in% `Region Altos Norte` ~ "Region Altos Norte",
-    Municipio %in% `Region Altos Sur` ~ "Region Altos Sur",
-    Municipio %in% `Region Ciénega` ~ "Region Ciénega",
-    Municipio %in% `Region Sureste` ~ "Region Sureste",
-    Municipio %in% `Region Sur` ~ "Region Sur",
-    Municipio %in% `Region Sierra de Amula` ~ "Region Sierra de Amula",
-    Municipio %in% `Region Costa Sur` ~ "Region Costa Sur",
-    Municipio %in% `Region Costa-Sierra Occidental` ~ "Region Costa-Sierra Occidental",
-    Municipio %in% `Region Valles` ~ "Region Valles",
-    Municipio %in% `Region Lagunas` ~ "Region Lagunas",
-    Municipio %in% `Region Centro` ~ "Region Centro")) %>% 
-  group_by(Año, Municipio, Subtipo.de.delito) %>%
+municipios_2<-municipios_2 %>%
+  group_by(Año, Subtipo.de.delito, Municipio) %>%
   summarise(ene=sum(Enero, na.rm = T),
             feb=sum(Febrero, na.rm = T),
             mar=sum(Marzo, na.rm = T),
@@ -409,6 +651,96 @@ municipios<-read.csv("IDM_NM_jun22.csv",check.names = T, encoding = "latin1") %>
                         may+ jun + jul+ ago+
                         sep+ oct+ nov+ dic))
 
+
+
+
+# read.csv("IDM_NM_sep22.csv",check.names = T, encoding = "latin1") %>%
+#   filter(Entidad=="Jalisco",
+#          Subtipo.de.delito %in% c("Abuso sexual", "Acoso sexual", "Hostigamiento sexual",
+#                                   "Violación simple", "Violación equiparada", "Feminicidio",
+#                                   "Violencia familiar",
+#                                   "Violencia de género en todas sus modalidades distinta a la violencia familiar")) %>%
+#   group_by(Año, Subtipo.de.delito) %>% summarise(ene=sum(Enero, na.rm = T),
+#                                                  feb=sum(Febrero, na.rm = T),
+#                                                  mar=sum(Marzo, na.rm = T),
+#                                                  abr=sum(Abril, na.rm = T),
+#                                                  may=sum(Mayo, na.rm = T),
+#                                                  jun=sum(Junio, na.rm = T),
+#                                                  jul=sum(Julio, na.rm = T),
+#                                                  ago=sum(Agosto, na.rm = T),
+#                                                  sep=sum(Septiembre, na.rm = T),
+#                                                  oct=sum(Octubre, na.rm = T),
+#                                                  nov=sum(Noviembre, na.rm = T),
+#                                                  dic=sum(Diciembre, na.rm = T),
+#                                                  Total=sum(ene+ feb+ mar+ abr+
+#                                                              may+ jun + jul+ ago+
+#                                                              sep+ oct+ nov+ dic))-> Estatal_total
+# entidad<- c("Estado de Jalisco")
+# cbind(entidad, Estatal_total)->Estatal_total
+# names(Estatal_total)[names(Estatal_total) == "...1"] <- "Municipio"
+# rbind(Estatal_total, municipios_2 )->municipios
+# write.csv(municipios, "municipios.csv")
+
+municipios<-read.csv("municipios.csv",check.names = T, encoding = "latin-1")
+
+
+
+################################################################################
+################################################################################
+
+# victimas <- read.csv("IDVFC_NM_sep22.csv", encoding="latin1", check.names = T) %>%
+#   filter(Subtipo.de.delito %in% c("Homicidio doloso", "Feminicidio"),
+#          Sexo=="Mujer", Entidad=="Jalisco")
+# write.csv(victimas, "victimas.csv")
+
+
+victimas<-read.csv("victimas.csv",check.names = T, encoding = "latin-1")
+
+################################################################################
+
+atenciones <- read_excel("atenciones.xlsx"
+                         #, 
+                         # col_types = c("text", "text", "text", 
+                         #               "date", "numeric", "numeric", 
+                         #               "numeric", "numeric", "numeric", 
+                         #               "numeric", "numeric", "numeric", 
+                         #               "numeric", "numeric", "numeric", 
+                         #               "numeric", "numeric", "numeric", "numeric", 
+                         #               "numeric", "numeric", "numeric", 
+                         #               "numeric", "numeric")
+                         ) %>% 
+  pivot_longer(
+    cols=Psicológica:Digital,
+    names_to = "tipo", 
+    values_to = "total") %>% 
+  suppressWarnings()
+
+atenciones$fecha   <-as.POSIXct(atenciones$Fecha) 
+atenciones$fecha   <-as.Date(atenciones$Fecha,format="%Y-%m-%d")
+atenciones$mes     <-format(as.Date(atenciones$Fecha,format="%Y-%m-%d"), "%Y-%m")
+atenciones$año     <-format(as.Date(atenciones$Fecha,format="%Y-%m-%d"), "%Y")
+atenciones$month   <-format(as.Date(atenciones$Fecha,format="%Y-%m-%d"), "%B")
+
+atenciones <- atenciones %>% 
+  filter(año >= 2022, 
+         mes != "2022-11") %>%
+  mutate(
+    month=case_when(
+      month=="enero" ~ "Enero",
+      month=="febrero" ~ "Febrero",
+      month=="marzo" ~ "Marzo",
+      month=="abril" ~ "Abril",
+      month=="mayo" ~ "Mayo",
+      month=="junio" ~ "Junio",
+      month=="julio" ~ "Julio",
+      month=="agosto" ~ "Agosto",
+      month=="septiembre" ~ "Septiembre",
+      month=="octubre" ~ "Octubre",
+      month=="noviembre" ~ "Noviembre",
+      month=="diciembre" ~ "Diciembre"),
+    month=factor(
+      month,levels=c("Enero", "Febrero", "Marzo","Abril", "Mayo", "Junio","Julio", "Agosto",
+                     "Septiembre", "Octubre","Noviembre", "Diciembre")))
 
 
 
@@ -416,324 +748,439 @@ municipios<-read.csv("IDM_NM_jun22.csv",check.names = T, encoding = "latin1") %>
 
 ################################################################################
 
-victimas <- read.csv("IDVFC_NM_jun22.csv", encoding="latin1", check.names = T)
-
-
-
 
 ui <- shinyUI(
-    tagList(
+  tagList(
     includeCSS("./www/style.css"),
     fluidPage(
       add_busy_spinner(onstart = F, spin = "fading-circle", color = "#E34F70"),
       
       navbarPage(title = "DATOS ABIERTOS", 
                  header=
-                 busy_start_up(
-                   loader = spin_epic("flower", color = "#7e3794"),
-                   text = "Cargando",
-                   timeout = 1500,
-                   color = "#7e3794",
-                   background = " white"
-                 ),
-      navbarMenu(title = "Código violeta", icon = icon("dot-circle"),
-        tabPanel(title = "Reportes 911",
-                 tabsetPanel(
-                   sidebarLayout(
-                     sidebarPanel("Seleccione algunas características",
-                                  
-                                    # #Numeric Inputs
-                                    # numericInput("slider", "Año inicial", min(reportes_llamadas$año), max(reportes_llamadas$año), step = 1 ,value=2019
-                                    #              ),
-                                    # numericInput("slider", "Año final", min(reportes_llamadas$año), max(reportes_llamadas$año),  step = 1, value=2022
-                                    #             ),
-
-                                  selectInput(
-                                    inputId = "llamadas_año",
-                                    label = "Año",
-                                    choices = unique(sort(reportes_llamadas$año)),
-                                    multiple = T
-                                  ),
-                                  selectInput(
-                                    inputId = "llamadas_month",
-                                    label = "Mes",
-                                    choices = unique(sort(reportes_llamadas$month)),
-                                    multiple = TRUE
-                                  ),
-                                  selectInput(
-                                    inputId = "llamadas_clasificacion",
-                                    label = "Tipo de violencia",
-                                    choices = unique(sort(reportes_llamadas$clasificación)),
-                                    multiple = TRUE
-                                  ),
-                                  selectInput(
-                                    inputId = "llamadas_municipio",
-                                    label = "Municipio",
-                                    choices = unique(sort(reportes_llamadas$municipio)),
-                                    multiple = T,
-                                    ),  
-                                  downloadButton("downloadData_llamadas", "Descarga (.csv)")),
-                     mainPanel(h3(align="center", "Total de llamadas al 911",
-                                  plotlyOutput("grafico_llamadas",  height = "auto", width = "auto"),
-                                  h6("Datos propornionados por el C5"))
-                   )))
-                 
-                 ),
-        tabPanel(title = "Violencia familiar",
-                 tabsetPanel(
-                   sidebarLayout(
-                       sidebarPanel("Seleccione algunas características",
-                            selectInput(
-                              inputId = "violencia_familiar_año",
-                              label = "Año",
-                              choices = unique(sort(violencia_familiar_diario$año)),
-                              multiple = T
+                   busy_start_up(
+                     loader = spin_epic("flower", color = "#7e3794"),
+                     text = "Cargando",
+                     timeout = 1500,
+                     color = "#7e3794",
+                     background = " white"
+                   ),
+                 navbarMenu(title = "CÓDIGO VIOLETA", icon = icon("dot-circle"),
+                            tabPanel(title = "Reportes 911",
+                                     tabsetPanel(
+                                       sidebarLayout(
+                                         sidebarPanel("Seleccione algunas características",
+                                                      
+                                                      # #Numeric Inputs
+                                                      # numericInput("slider", "Año inicial", min(reportes_llamadas$año), max(reportes_llamadas$año), step = 1 ,value=2019
+                                                      #              ),
+                                                      # numericInput("slider", "Año final", min(reportes_llamadas$año), max(reportes_llamadas$año),  step = 1, value=2022
+                                                      #             ),
+                                                      
+                                                      selectInput(
+                                                        inputId = "llamadas_año",
+                                                        label = "Año",
+                                                        choices = unique(sort(reportes_llamadas$año)),
+                                                        multiple = T
+                                                      ),
+                                                      selectInput(
+                                                        inputId = "llamadas_month",
+                                                        label = "Mes",
+                                                        choices = unique(sort(reportes_llamadas$month)),
+                                                        multiple = TRUE
+                                                      ),
+                                                      selectInput(
+                                                        inputId = "llamadas_clasificacion",
+                                                        label = "Tipo de violencia",
+                                                        choices = unique(sort(reportes_llamadas$clasificación)),
+                                                        multiple = TRUE
+                                                      ),
+                                                      selectInput(
+                                                        inputId = "llamadas_municipio",
+                                                        label = "Municipio",
+                                                        choices = unique(sort(reportes_llamadas$municipio)),
+                                                        multiple = T,
+                                                      ),  
+                                                      downloadButton("downloadData_llamadas", "Descarga (.csv)")),
+                                         mainPanel(h3(align="center", "Llamadas al 911 por violencia contra las mujeres",
+                                                      plotlyOutput("grafico_llamadas",  height = "auto", width = "auto"),
+                                                      h6("Datos proporcionados por Escudo Urbano C5"))
+                                         )))
+                                     
                             ),
-                            selectInput(
-                              inputId = "violencia_familiar_month",
-                              label = "Mes",
-                              choices = unique(sort(violencia_familiar_diario$month)),
-                              multiple = TRUE
-                            ),
-                            selectInput(
-                              inputId = "violencia_familiar_sexo",
-                              label = "Sexo",
-                              choices = unique(sort(violencia_familiar_diario$sexo)),
-                              multiple = TRUE
-                            ),
-                            selectInput(
-                              inputId = "violencia_familiar_zona",
-                              label = "Zona",
-                              choices = unique(sort(violencia_familiar_diario$zona)),
-                              multiple = TRUE,
-                              selected = "Estado de Jalisco"
-                            ),  
-                            downloadButton("downloadData_total", "\nDescarga (.csv)")),
-               mainPanel(plotOutput("grafico_violencia_familiar"#,  height = "auto", #width = "auto"
-                                    ),
-                         h6("Fuente: Elaborado con datos de la Fiscalía Estatal."))
-             ))),
-        
-        # - - - - - - - - -- - - - - - - - - - - - - - - - - - 
-    tabPanel(title = "Medidas de protección",
-             fluidRow(width=12,  
-                      h3(align="center", "Medidas de protección trabajadas"),
-             tabsetPanel(
-               tabPanel("Total de medidas",  
-                      box(width=12,
-                          tabsetPanel(
-                            #h2(align="center", "Medidas de protección trabajadas")
-                            ),
-                          sidebarPanel("Seleccione algunas características",
-                                       selectInput(
-                                         inputId = "medidas_año",
-                                         label = "Año",
-                                         choices = unique(sort(medidas_ordenes_municipal$año)),
-                                         multiple = TRUE                                                               ),                                                               
-                                       selectInput(
-                                         inputId = "medidas_mes",
-                                         label = "Mes",
-                                         choices = unique(sort(medidas_ordenes_municipal$mes)),
-                                         multiple = TRUE
-                                       ),
-                                       selectInput(
-                                         inputId = "medidas_municipio",
-                                         label = "Municipio",
-                                         choices = unique(sort(medidas_ordenes_municipal$municipio)),
-                                         multiple = TRUE
-                                       ),
-                                       downloadButton("download_medidas", "Descarga (.csv)")),
-                          mainPanel(plotlyOutput("grafico_medidas", height = "auto", width = "auto"),
-                                    h6("Fuente: Elaborado con datos de la Fiscalía Estatal.")))),
-               tabPanel("Mapa de medidas de protección",
-                 #tags$br(),
-                 column(12, align="center",
-                        h2(""),
-          
-                        #h2("Total de medidas trabajadas en el estado de Jalisco, 2019 a 2022"),
-                          #h6("Datos de la Fiscalía del Estado"),
-                          selectInput("mapa_medidas", "Seleccione el año" ,
-                                      choices = c("Año 2019", "Año 2020", 
-                                                  "Año 2021", "Año 2022 (mayo)"),
-                                      selected = "Año 2022 (mayo)",  multiple = FALSE, 
-                                      selectize = TRUE),
-                        # h3(text=paste0("Total de medidas de protección otorgadas: ", input$mapa_medidas ,
-                        #           '<br>','<sup>',
-                        #           'Datos de la Fiscalía del Estado de Jalisco ', align = "left")),
-                        plotlyOutput("mapa_1",height = "auto", width = "auto"),
-                        h5("Datos de la Fiscalía del Estado de Jalisco", align="left"),
-                          h5("*La etiqueta del mapa 'value' hace referencia al valor de la tasa de homicidios dolosos de mujeres.", 
-                             align="left", face="italic")))
-             ))),
-    
-    #--------------------------------------------
-    
-    tabPanel(title = "Ordenes de protección",
-                      fluidRow(width=12,  
-                               h3(align="center", "Ordenes de protección emitidas"),
-                               tabsetPanel(
-                                 tabPanel("Total de Ordenes",  
-                                          box(width=12,
+                            tabPanel(title = "Violencia familiar",
+                                     tabsetPanel(
+                                       sidebarLayout(
+                                         sidebarPanel("Seleccione algunas características",
+                                                      selectInput(
+                                                        inputId = "violencia_familiar_año",
+                                                        label = "Año",
+                                                        choices = unique(sort(violencia_familiar_diario$año)),
+                                                        multiple = T
+                                                      ),
+                                                      selectInput(
+                                                        inputId = "violencia_familiar_month",
+                                                        label = "Mes",
+                                                        choices = unique(sort(violencia_familiar_diario$month)),
+                                                        multiple = TRUE
+                                                      ),
+                                                      selectInput(
+                                                        inputId = "violencia_familiar_sexo",
+                                                        label = "Sexo",
+                                                        choices = unique(sort(violencia_familiar_diario$sexo)),
+                                                        multiple = TRUE
+                                                      ),
+                                                      selectInput(
+                                                        inputId = "violencia_familiar_zona",
+                                                        label = "Zona",
+                                                        choices = unique(sort(violencia_familiar_diario$zona)),
+                                                        multiple = TRUE,
+                                                        selected = "Estado de Jalisco"
+                                                      )#,
+                                                      #downloadButton("download_violencia_familiar", "Descarga (.csv)")
+                                         ),
+                                         mainPanel(plotlyOutput("grafico_violencia_familiar",  height = "auto", #width = "auto"
+                                         ),
+                                         h6("Fuente: Elaborado con datos de la Fiscalía Estatal."))
+                                       ))),
+                            
+                            # - - - - - - - - -- - - - - - - - - - - - - - - - - - 
+                            tabPanel(title = "Medidas de protección",
+                                     fluidRow(width=12,  
+                                              h3(align="center", "Medidas de protección trabajadas"),
                                               tabsetPanel(
-                                                #h2(align="center", "ordenes de protección trabajadas")
-                                              ),
-                                              sidebarPanel("Seleccione algunas características",
-                                                           selectInput(
-                                                             inputId = "ordenes_año",
-                                                             label = "Año",
-                                                             choices = unique(sort(medidas_ordenes_estatal$año)),
-                                                             multiple = TRUE                                                               ),                                                               
-                                                           selectInput(
-                                                             inputId = "ordenes_mes",
-                                                             label = "Mes",
-                                                             choices = unique(sort(medidas_ordenes_estatal$mes)),
-                                                             multiple = TRUE
-                                                           ),
-                                                           selectInput(
-                                                             inputId = "ordenes_municipio",
-                                                             label = "Municipio",
-                                                             choices = unique(sort(medidas_ordenes_estatal$municipio)),
-                                                             multiple = TRUE
-                                                           ),
-                                                           downloadButton("download_ordenes", "Descarga (.csv)")),
-                                              mainPanel(plotlyOutput("grafico_ordenes", height = "auto", width = "auto"),
-                                                        h6("Fuente: Elaborado con datos de la Fiscalía Estatal.")))),
-                                 tabPanel("Mapa de ordenes de protección",
-                                          #tags$br(),
-                                          column(12, align="center",
-                                                 h2(""),
-                                                 
-                                                 #h2("Total de ordenes trabajadas en el estado de Jalisco, 2019 a 2022"),
-                                                 #h6("Datos de la Fiscalía del Estado"),
-                                                 selectInput("mapa_ordenes", "Seleccione el año" ,
-                                                             choices = c("Año 2019", "Año 2020", 
-                                                                         "Año 2021", "Año 2022 (mayo)"),
-                                                             selected = "Año 2022 (mayo)",  multiple = FALSE, 
-                                                             selectize = TRUE),
-                                                 # h3(text=paste0("Total de ordenes de protección otorgadas: ", input$mapa_ordenes ,
-                                                 #           '<br>','<sup>',
-                                                 #           'Datos de la Fiscalía del Estado de Jalisco ', align = "left")),
-                                                 plotlyOutput("mapa_2",height = "auto", width = "auto"),
-                                                 h5("Datos de la Fiscalía del Estado de Jalisco", align="left"),
-                                                 h5("*La etiqueta del mapa 'value' hace referencia al valor de la tasa de homicidios dolosos de mujeres.", 
-                                                    align="left", face="italic")))
-                               ))),
-             
-    tabPanel(title = "Muertes violentas",
-             column(12, align="center",
-                    h2("Muertes violentas de mujeres"),
-                    box(width = 8,
-                        tabsetPanel(
-                          sidebarLayout(
-                            sidebarPanel("Seleccione algunas características",
-                                         
-                                        
-                                         selectInput(
-                                           inputId = "victimas_año",
-                                           label = "Año",
-                                           choices = unique(sort(victimas$Año)),
-                                           multiple = T
-                                         ),
-                                         selectInput(
-                                           inputId = "victimas_edad",
-                                           label = "Modalidad",
-                                           choices = unique(sort(victimas$Rango.de.edad)),
-                                           multiple = TRUE
-                                         ),
-                                         selectInput(
-                                           inputId = "victimas_delito",
-                                           label = "Delito",
-                                           choices = unique(sort(victimas$Subtipo.de.delito)),
-                                           multiple = TRUE
-                                         ),  
-                                         downloadButton("downloadData_victimas", "Descarga (.csv)")),
-                            mainPanel(h3(align="center", "Total de muertes violentas de mujeres",
-                                         plotlyOutput("grafico_victimas",  height = "auto", width = "auto"),
-                                         h6("Datos del Secretariado Ejecutivo del Sistema Nacional de Seguridad Pública, SESNSP")))))),
-                    
-                    box(width=4,
-             mainPanel(dataTableOutput("table_muertes"))
-             )
-  ))),
-  navbarMenu(
-    title = "Incidencia delictiva",
-    icon = icon("dot-circle"),
-    tabPanel(title = "Municipal",
-             
-             tabPanel("Total por municipio",
-                      sidebarLayout(
-                        sidebarPanel("\nSeleccione algunas características",
-                                     selectInput(
-                                       inputId = "municipla_delito",
-                                       label = "Delito",
-                                       choices = sort(unique(municipios$Subtipo.de.delito)),
-                                       multiple = F,
-                                       selected = "Feminicidio"
-                                     ),
-                                     selectInput(
-                                       inputId = "municipal_municipio",
-                                       label = "Municipio",
-                                       choices = sort(unique(municipios$Municipio)),
-                                       multiple = T,
-                                       selected = "Acatic"
-                                       # options = list(
-                                       #   `actions-box` = TRUE,
-                                       #   `deselect-all-text` = "Sin selección filtro",
-                                       #   `select-all-text` = "Seleccionar todos",
-                                       #   `none-selected-text` = "Sólo los de la Region")
-                                     )),
-                        
-                        #downloadButton("downloadData_total", "\nDescarga (.csv)")),
-                        mainPanel(plotlyOutput("grafico_municipal"))))),
-    
-    
-    ###############################33333333
-    tabPanel(title = "Comparativa regional",
-             tabPanel("Incidencia delictiva por regiones",
-                      sidebarLayout(
-                        sidebarPanel("nSeleccione algunas características",
-                                     selectInput(
-                                       inputId = "regional_delito",
-                                       label = "Delito",
-                                       choices = sort(unique(regiones$Subtipo.de.delito)),
-                                       multiple = F,
-                                       selected = "Feminicidio"
-                                     ),
-                                     selectInput(
-                                       inputId = "regional_region",
-                                       label = "Region",
-                                       choices = sort(unique(regiones$Region)),
-                                       multiple = T,
-                                       selected = c("Región Centro","Region Altos Norte", "Región Lagunas")
-                                     )),
-                        #downloadButton("downloadData_total", "\nDescarga (.csv)")),
-                        
-                        
-                        mainPanel(plotlyOutput("grafico_regional"))
-                      ))
-             
-             )
-  ),
-  navbarMenu(
-    title = "Unidades de atención",
-    icon = icon("dot-circle"),
-    tabPanel(title = "Perfil de mujeres atendidas"),
-    tabPanel(title = "Perfil de unidades de atención")
-  ),
-  navbarMenu(
-    title = "Documentación",
-    icon = icon("file-export"),
-    tabPanel(title = "Reportes estadísticos"),
-    tabPanel(title = "Descarga masiva")
-  )
-)
-
-)))
+                                                tabPanel("Total de medidas",  
+                                                         box(width=12,
+                                                             tabsetPanel(
+                                                               #h2(align="center", "Medidas de protección trabajadas")
+                                                             ),
+                                                             sidebarPanel("Seleccione algunas características",
+                                                                          selectInput(
+                                                                            inputId = "medidas_año",
+                                                                            label = "Año",
+                                                                            choices = unique(sort(medidas_ordenes_municipal$año)),
+                                                                            multiple = TRUE                                                               ),                                                               
+                                                                          selectInput(
+                                                                            inputId = "medidas_mes",
+                                                                            label = "Mes",
+                                                                            choices = unique(sort(medidas_ordenes_municipal$mes)),
+                                                                            multiple = TRUE
+                                                                          ),
+                                                                          selectInput(
+                                                                            inputId = "medidas_municipio",
+                                                                            label = "Municipio",
+                                                                            choices = unique(sort(medidas_ordenes_municipal$municipio)),
+                                                                            multiple = TRUE
+                                                                          ),
+                                                                          downloadButton("download_medidas", "Descarga (.csv)")),
+                                                             mainPanel(plotlyOutput("grafico_medidas", height = "auto", width = "auto"),
+                                                                       h6("Fuente: Elaborado con datos de la Fiscalía Estatal.")))),
+                                                tabPanel("Mapa de medidas de protección",
+                                                         #tags$br(),
+                                                         column(12, align="center",
+                                                                h2(""),
+                                                                
+                                                                #h2("Total de medidas trabajadas en el estado de Jalisco, 2019 a 2022"),
+                                                                #h6("Datos de la Fiscalía del Estado"),
+                                                                selectInput("mapa_medidas", "Seleccione el año" ,
+                                                                            choices = c("Año 2019", "Año 2020", 
+                                                                                        "Año 2021", "año 2022 (agosto)"),
+                                                                            selected = "año 2022 (agosto)",  multiple = FALSE, 
+                                                                            selectize = TRUE),
+                                                                # h3(text=paste0("Total de medidas de protección otorgadas: ", input$mapa_medidas ,
+                                                                #           '<br>','<sup>',
+                                                                #           'Datos de la Fiscalía del Estado de Jalisco ', align = "left")),
+                                                                plotlyOutput("mapa_1",height = "auto", width = "auto"),
+                                                                h5("Datos de la Fiscalía del Estado de Jalisco", align="left"),
+                                                                h5("*La etiqueta del mapa 'value' hace referencia al valor de la tasa de homicidios dolosos de mujeres.", 
+                                                                   align="left", face="italic")))
+                                              ))),
+                            
+                            #--------------------------------------------
+                            
+                            tabPanel(title = "Ordenes de protección",
+                                     fluidRow(width=12,  
+                                              h3(align="center", "Ordenes de protección emitidas"),
+                                              tabsetPanel(
+                                                tabPanel("Total de Ordenes",  
+                                                         box(width=12,
+                                                             tabsetPanel(
+                                                               #h2(align="center", "ordenes de protección trabajadas")
+                                                             ),
+                                                             sidebarPanel("Seleccione algunas características",
+                                                                          selectInput(
+                                                                            inputId = "ordenes_año",
+                                                                            label = "Año",
+                                                                            choices = unique(sort(medidas_ordenes_estatal$año)),
+                                                                            multiple = TRUE                                                               ),                                                               
+                                                                          selectInput(
+                                                                            inputId = "ordenes_mes",
+                                                                            label = "Mes",
+                                                                            choices = unique(sort(medidas_ordenes_estatal$mes)),
+                                                                            multiple = TRUE
+                                                                          ),
+                                                                          selectInput(
+                                                                            inputId = "ordenes_municipio",
+                                                                            label = "Municipio",
+                                                                            choices = unique(sort(medidas_ordenes_estatal$municipio)),
+                                                                            multiple = TRUE
+                                                                          ),
+                                                                          downloadButton("download_ordenes", "Descarga (.csv)")),
+                                                             mainPanel(plotlyOutput("grafico_ordenes", height = "auto", width = "auto"),
+                                                                       h6("Fuente: Elaborado con datos de la Fiscalía Estatal.")))),
+                                                tabPanel("Mapa de ordenes de protección",
+                                                         #tags$br(),
+                                                         column(12, align="center",
+                                                                h2(""),
+                                                                
+                                                                #h2("Total de ordenes trabajadas en el estado de Jalisco, 2019 a 2022"),
+                                                                #h6("Datos de la Fiscalía del Estado"),
+                                                                selectInput("mapa_ordenes", "Seleccione el año" ,
+                                                                            choices = c("Año 2019", "Año 2020", 
+                                                                                        "Año 2021", "año 2022 (agosto)"),
+                                                                            selected = "año 2022 (agosto)",  multiple = FALSE, 
+                                                                            selectize = TRUE),
+                                                                # h3(text=paste0("Total de ordenes de protección otorgadas: ", input$mapa_ordenes ,
+                                                                #           '<br>','<sup>',
+                                                                #           'Datos de la Fiscalía del Estado de Jalisco ', align = "left")),
+                                                                plotlyOutput("mapa_2",height = "auto", width = "auto"),
+                                                                h5("Datos de la Fiscalía del Estado de Jalisco", align="left"),
+                                                                h5("*La etiqueta del mapa 'value' hace referencia al valor de la tasa de homicidios dolosos de mujeres.", 
+                                                                   align="left", face="italic")))
+                                              ))),
+                            
+                            tabPanel(title = "Muertes violentas",
+                                     column(12, align="center",
+                                            h2("Muertes violentas de mujeres"),
+                                            box(width = 8,
+                                                tabsetPanel(
+                                                  sidebarLayout(
+                                                    sidebarPanel("Seleccione algunas características",
+                                                                 
+                                                                 
+                                                                 selectInput(
+                                                                   inputId = "victimas_año",
+                                                                   label = "Año",
+                                                                   choices = unique(sort(victimas$Año)),
+                                                                   multiple = T
+                                                                 ),
+                                                                 selectInput(
+                                                                   inputId = "victimas_edad",
+                                                                   label = "Modalidad",
+                                                                   choices = unique(sort(victimas$Rango.de.edad)),
+                                                                   multiple = TRUE
+                                                                 ),
+                                                                 selectInput(
+                                                                   inputId = "victimas_delito",
+                                                                   label = "Delito",
+                                                                   choices = unique(sort(victimas$Subtipo.de.delito)),
+                                                                   multiple = TRUE
+                                                                 ),  
+                                                                 downloadButton("downloadData_victimas", "Descarga (.csv)")),
+                                                    mainPanel(h3(align="center", "Total de muertes violentas de mujeres",
+                                                                 
+                                                                 plotlyOutput("grafico_victimas",  height = "auto", width = "auto"),
+                                                                 h6("Datos del Secretariado Ejecutivo del Sistema Nacional de Seguridad Pública, SESNSP")))))),
+                                            
+                                            box(width=4,
+                                                mainPanel(dataTableOutput("table_muertes"))
+                                            )
+                                     ))),
+                 
+                 
+                 #############################################################################################
+                 #############################################################################################
+                 
+                 navbarMenu(
+                   title = "Incidencia delictiva",
+                   icon = icon("dot-circle"),
+                   tabPanel(title = "Municipal",
+                            
+                            tabPanel("Total por municipio",
+                                     h3(align="center", "Total de víctimas en el Estado de Jalisco"),
+                                     h5(align="center", "Los datos son proporcionados mensualmente por el Secretariado Ejecutivo
+                         del Sistema Nacional de Seguridad Pública, en este apartado sólo se muestran los delitos
+                         que se consideran vinculados a la razón de género."),
+                                     sidebarLayout(
+                                       sidebarPanel("\nSeleccione algunas características",
+                                                    selectInput(
+                                                      inputId = "municipal_delito",
+                                                      label = "Delito",
+                                                      choices = sort(unique(municipios$Subtipo.de.delito)),
+                                                      multiple = F,
+                                                      selected = "Feminicidio"
+                                                    ),
+                                                    selectInput(
+                                                      inputId = "municipal_municipio",
+                                                      label = "Municipio",
+                                                      choices = sort(unique(municipios$Municipio)),
+                                                      multiple = T,
+                                                      selected = "Estado de Jalisco"
+                                                      # options = list(
+                                                      #   `actions-box` = TRUE,
+                                                      #   `deselect-all-text` = "Sin selección filtro",
+                                                      #   `select-all-text` = "Seleccionar todos",
+                                                      #   `none-selected-text` = "Sólo los de la Región")
+                                                    )),
+                                       
+                                       #downloadButton("downloadData_total", "\nDescarga (.csv)")),
+                                       mainPanel(plotlyOutput("grafico_municipal"))))),
+                   
+                   
+                   #############################################################################################
+                   
+                   tabPanel(title = "Comparativa Regional",
+                            tabPanel("Incidencia delictiva por Regiones",
+                                     h3(align="center", "Total de víctimas por regiones del Estado de Jalisco"),
+                                     h5(align="center", "Los datos son proporcionados mensualmente por el Secretariado Ejecutivo
+                         del Sistema Nacional de Seguridad Pública, en este apartado sólo se muestran los delitos
+                         que se consideran vinculados a la razón de género."),
+                                     
+                                     sidebarLayout(
+                                       sidebarPanel("Seleccione algunas características",
+                                                    selectInput(
+                                                      inputId = "Regiónal_delito",
+                                                      label = "Delito",
+                                                      choices = sort(unique(Regiones$Subtipo.de.delito)),
+                                                      multiple = F,
+                                                      selected = "Feminicidio"
+                                                    ),
+                                                    selectInput(
+                                                      inputId = "Regiónal_Región",
+                                                      label = "Región",
+                                                      choices = sort(unique(Regiones$Región)),
+                                                      multiple = T,
+                                                      selected = c("Región Altos Norte")
+                                                    )),
+                                       #downloadButton("downloadData_total", "\nDescarga (.csv)")),
+                                       
+                                       
+                                       mainPanel(plotlyOutput("grafico_Regiónal"))
+                                     ))
+                            
+                   )
+                 ),
+                 navbarMenu(
+                   title = "Unidades de atención",
+                   icon = icon("dot-circle"),
+                   tabPanel(title = "Total de atenciones",
+                            tabPanel("Total por atenciones brindadas en el año 2022.",
+                                     h3(align="center", "Total de atenciones realizadas en las módulos de atención."),
+                                     h5(align="center", "Los datos son proporcionados mensualmente por el registro
+                         interno a cada usuaria que solicita atención en cualquiera de las unidades de atención."),
+                                     sidebarLayout(
+                                       sidebarPanel("Seleccione algunas características",
+                                                    # selectInput(
+                                                    #   inputId = "atencion_año",
+                                                    #   label = "Delito",
+                                                    #   choices = sort(unique(atenciones$año)),
+                                                    #   multiple = T
+                                                    # ),
+                                                    selectInput(
+                                                      inputId = "atencion_mes",
+                                                      label = "Mes",
+                                                      choices = sort(unique(atenciones$month)),
+                                                      multiple = T
+                                                    ),
+                                                    selectInput(
+                                                      inputId = "atencion_tipo",
+                                                      label = "Tipo de violencia por la que se atiende",
+                                                      choices = sort(unique(atenciones$tipo)),
+                                                      multiple = T
+                                                    ),
+                                                    selectInput(
+                                                      inputId = "atencion_unidad",
+                                                      label = "Unidad",
+                                                      choices = sort(unique(atenciones$Unidad)),
+                                                      multiple = T
+                                                    )),
+                                       
+                                       #downloadButton("downloadData_total", "\nDescarga (.csv)")),
+                                       mainPanel(plotlyOutput("total_atenciones_grafico"))))),
+                   
+                   tabPanel(title = "Comportamiento anual por tipo de violencia",
+                            tabPanel("Total por atenciones brindadas en el año 2022.",
+                                     h3(align="center", "Total de atenciones realizadas en las módulos de atención."),
+                                     h5(align="center", "Los datos son proporcionados mensualmente por el registro
+                         interno a cada usuaria que solicita atención en cualquiera de las unidades de atención."),
+                                     sidebarLayout(
+                                       sidebarPanel("Seleccione algunas características",
+                                                    # selectInput(
+                                                    #   inputId = "atencion_año",
+                                                    #   label = "Delito",
+                                                    #   choices = sort(unique(atenciones$año)),
+                                                    #   multiple = T
+                                                    # ),
+                                                    selectInput(
+                                                      inputId = "atencion_mes2",
+                                                      label = "Mes",
+                                                      choices = sort(unique(atenciones$Mes)),
+                                                      multiple = T
+                                                    ),
+                                                    selectInput(
+                                                      inputId = "atencion_tipo2",
+                                                      label = "Tipo de violencia",
+                                                      choices = sort(unique(atenciones$tipo)),
+                                                      multiple = T
+                                                    ),
+                                                    selectInput(
+                                                      inputId = "atencion_unidad2",
+                                                      label = "Unidad",
+                                                      choices = sort(unique(atenciones$Unidad)),
+                                                      multiple = T
+                                                    )),
+                                       
+                                       #downloadButton("downloadData_total", "\nDescarga (.csv)")),
+                                       mainPanel(plotlyOutput("atenciones_mensuales"))))),
+                   tabPanel(title = "Atenciones por tipo de violencia",
+                            tabPanel("Total de atenciones brindadas en el año 2022 por tipo de violencia.",
+                                     h3(align="center", "Total de atenciones realizadas en las módulos de atención."),
+                                     h5(align="center", "Los datos son proporcionados mensualmente por el registro
+                         interno a cada usuaria que solicita atención en cualquiera de las unidades de atención."),
+                                     sidebarLayout(
+                                       sidebarPanel("Seleccione algunas características",
+                                                    #              selectInput(
+                                                    #                inputId = "atencion_año",
+                                                    #                label = "Delito",
+                                                    #                choices = sort(unique(atenciones$año)),
+                                                    #                multiple = T
+                                                    #              ),
+                                                    selectInput(
+                                                      inputId = "atencion_mes3",
+                                                      label = "Mes",
+                                                      choices = sort(unique(atenciones$Mes)),
+                                                      multiple = T
+                                                    ),
+                                                    selectInput(
+                                                      inputId = "atencion_tipo3",
+                                                      label = "Tipo de violencia",
+                                                      choices = sort(unique(atenciones$tipo)),
+                                                      multiple = T
+                                                    ),
+                                                    selectInput(
+                                                      inputId = "atencion_unidad3",
+                                                      label = "Unidad",
+                                                      choices = sort(unique(atenciones$Unidad)),
+                                                      multiple = T
+                                                    )
+                                       ),
+                                       
+                                       #downloadButton("downloadData_total", "\nDescarga (.csv)")),
+                                       mainPanel(plotlyOutput("atenciones_tipo")))))
+                 ),
+                 navbarMenu(
+                   title = "Documentación",
+                   icon = icon("file-export"),
+                   tabPanel(title = "Reportes estadísticos"),
+                   tabPanel(title = "Descarga masiva")
+                 )
+      )
+      
+    )))
 
 server <- function(input, output) {
- 
-
-
+  
+  
+  
   
   output$downloadData_llamadas <- downloadHandler(
     filename = function() {
@@ -742,8 +1189,8 @@ server <- function(input, output) {
     content = function(file) {
       write.csv(llamadas_reactive(), file, row.names = FALSE)
     })
-
-
+  
+  
   output$slider <- renderUI({
     sliderInput("Slider",
                 min=input$min_val, value=2019,
@@ -807,9 +1254,12 @@ server <- function(input, output) {
     
     reportes_llamadas_reactive() %>% 
       group_by(año, mes, clasificación) %>% 
-      summarise(total=n()) %>% 
+      summarise(total=n(),.groups = "drop") %>% 
+      mutate(text = paste("Total de llamadas: ", scales::comma(total), 
+                          "\nPeríodo: ", mes,
+                          "\nTipo de violencia: ", clasificación, sep="")) %>% 
       ggplot() +
-      aes(x = as.factor(mes), y = total, 
+      aes(x = as.factor(mes), y = total, text=text,
           group = 1, fill = clasificación, color = clasificación) +
       geom_point(size=1.7)+
       geom_line(size=1) +
@@ -826,8 +1276,8 @@ server <- function(input, output) {
           `Violencia familiar` = "#7E3794"))+      
       scale_y_continuous(labels = scales::comma) +
       labs(title= "",
-             #paste0("Municipio ",reportes_llamadas_reactive()$municipio[1]),
-           x="Mes", y="Total de llamadas", fill="", color="")+
+           #paste0("Municipio ",reportes_llamadas_reactive()$municipio[1]),
+           x="", y="Total de llamadas", fill="", color="")+
       theme_minimal()+
       theme(text=element_text(size=11,  family="Montserrat"),
             plot.margin = margin(2, 2, 2, 2, "cm"),
@@ -837,7 +1287,7 @@ server <- function(input, output) {
             axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1, size=10))->grafico_llamadas
     
     
-    ggplotly(grafico_llamadas) %>%
+    ggplotly(grafico_llamadas, tooltip = "text") %>%
       layout(title = list(text = paste0("",#"Total de denuncias por violencia familiar \n", 
                                         reportes_llamadas_reactive()$municipio,
                                         '<br>',
@@ -847,9 +1297,9 @@ server <- function(input, output) {
              legend = list(orientation = "h", x = 0.1, y = -0.3,
                            side="bottom"))
     
-      # layout(legend = list(orientation = "h", x = 0.1, y = -0.3),
-      #        margin = list(b=0,t=30)) Este es el bueno
-
+    # layout(legend = list(orientation = "h", x = 0.1, y = -0.3),
+    #        margin = list(b=0,t=30)) Este es el bueno
+    
     #   layout(title = list(text = paste0("Total de denuncias por violencia familiar\n",
     #                                     reportes_llamadas_reactive()$municipio,
     #                                     '</sup>',
@@ -866,15 +1316,15 @@ server <- function(input, output) {
   
   
   
-# ---------------------------------------------------------------------------- #  
-  output$downloadData_total <- downloadHandler(
-    filename = function() {
-      paste(input$dataset, ".csv", sep = "")
-    },
-    content = function(file) {
-      write.csv(violencia_familiar_diario_reactive(), file, row.names = FALSE)
-    }
-  )
+  # ---------------------------------------------------------------------------- #  
+  # output$download_violencia_familiar <- downloadHandler(
+  #   filename = function() {
+  #     paste(input$violencia_familiar_diario, ".csv", sep = "")
+  #   },
+  #   content = function(file) {
+  #     write.csv(violencia_familiar_diario, "violencia_familiar.csv")
+  #   }
+  # )
   
   
   output$violencia_familiar_año <- renderUI({
@@ -884,12 +1334,6 @@ server <- function(input, output) {
                 multiple = T)
   })
   
-  # output$violencia_familiar_mes <- renderUI({
-  #   selectInput("violencia_familiar_mes",
-  #               label =  "Seleccione el mes",
-  #               choices = sort(unique(violencia_familiar_diario$mes)),
-  #               multiple = T)
-  # })
   
   output$violencia_familiar_month <- renderUI({
     selectInput("violencia_familiar_month",
@@ -900,12 +1344,12 @@ server <- function(input, output) {
   
   output$violencia_familiar_sexo <- renderUI({
     selectInput("violencia_familiar_sexo",
-                label =  "Selecciona la zona",
+                label =  "Selecciona el sexo",
                 choices = sort(unique(violencia_familiar_diario$sexo)),
                 multiple = T)
   })
   
-
+  
   output$violencia_familiar_zona <- renderUI({
     selectInput("violencia_familiar_zona",
                 label =  "Selecciona la zona",
@@ -920,61 +1364,66 @@ server <- function(input, output) {
     violencia_familiar_diario %>%
       filter(
         if(!is.null(input$violencia_familiar_año))             año %in% input$violencia_familiar_año          else año != "",
-        if(!is.null(input$violencia_familiar_mes))             mes %in% input$violencia_familiar_mes          else mes != "",
         if(!is.null(input$violencia_familiar_month))         month %in% input$violencia_familiar_month        else month != "",
         if(!is.null(input$violencia_familiar_zona))           zona %in% input$violencia_familiar_zona         else zona != "",
         if(!is.null(input$violencia_familiar_sexo))           sexo %in% input$violencia_familiar_sexo         else sexo != ""
-      )
+      ) 
+    
     
   })
   
   
-  output$grafico_violencia_familiar <- renderPlot ({
-
+  output$grafico_violencia_familiar <- renderPlotly ({
+    
     violencia_familiar_diario_reactive() %>% 
+      mutate(
+        month=factor(
+          month,levels=c("Enero", "Febrero", "Marzo","Abril", "Mayo", "Junio","Julio", "Agosto",
+                         "Septiembre", "Octubre","Noviembre", "Diciembre"))) %>%
       group_by(mes,sexo) %>% 
-      summarise(registro=sum(registro)) %>% 
-    ggplot() +
-      aes(x = as.factor(mes), y = registro, 
-          fill = sexo, color = sexo, 
-          group = 1
-          ) +
-      geom_point(size=3)+
-      geom_line(size=1)+
-      scale_color_manual(
-        values = c(Mujeres = "#C91682",
-                   Hombres = "#7E3794"))+
-      scale_fill_manual(values =
-                          c(Mujeres = "#C91682",
-                            Hombres = "#7E3794"))+
+      summarise(registro=sum(registro),.groups = "drop") %>% 
+      mutate(text = paste("Total de denuncias: ", scales::comma(registro), 
+                          "\nPeríodo: ", mes,
+                          "\nSexo del denunciante: ", sexo, sep="")) %>% 
+      ggplot()+
+      aes(x = as.factor(mes), y = registro, group=sexo, text=text) +
+      geom_point(aes(fill=sexo, color = sexo), size=3)+
+      geom_line (aes(fill=sexo, color = sexo), size=1) +
+      scale_color_manual(values = c(
+        Mujeres = "#C91682",
+        Hombres = "#7E3794"))+
+      scale_fill_manual(values = c(
+        Mujeres = "#C91682",
+        Hombres = "#7E3794"))+
       scale_y_continuous(labels = scales::comma) +
-      labs(x="Mes", y="Total de denuncias", fill="Sexo", color="Sexo")+
+      labs(x="", y="Total de denuncias", fill="Sexo", color="Sexo")+
       theme_minimal()+
-      theme(text=element_text(size=11,  family="Montserrat"),
+      theme(text=element_text(size=11, family="Montserrat"),
             plot.margin = margin(2, 2, 2, 2, "cm"),
             strip.text.x = element_text(size = 12, face = "bold", angle=90),
             plot.tag = element_text(size = 15L, hjust = 0, family="Montserrat"),
             plot.title = element_text(size = 15L, hjust = 0.5, family="Montserrat"),
-            plot.caption = element_text(size = 12L, hjust = 0.5),
-            axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1, size=11))->grafico_violencia_familiar
+            plot.caption = element_text(size = 12L, hjust = 0.5, family="Montserrat"),
+            axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1, size=11, family="Montserrat"))->grafico_violencia_familiar_1
     
-    grafico_violencia_familiar
-    # ggplotly(grafico_violencia_familiar) %>%
-    #   layout(title = list(text = paste0("Total de denuncias por violencia familiar \n",
+    
+    # #grafico_violencia_familiar
+    ggplotly(grafico_violencia_familiar_1, tooltip = "text") %>%
+      layout(title = list(text = paste0("Total de denuncias por violencia familiar \n",
+                                        violencia_familiar_diario_reactive()$zona,
+                                        '<br>',
+                                        '<sup>')),
+             margin = list(b=0,t=50),
+             xaxis = list(side = "bottom"),legend = list(side="bottom"))
+    
+    
+    
+    # layout(#legend = list(orientation = "h", x = 0.1, y = -0.3),
+    #        margin = list(b=0,t=150),
+    #                      title = list(paste0("Total de denuncias por violencia familiar \n",
     #                                     violencia_familiar_diario_reactive()$zona,
-    #                                    '<br>',
-    #                                    '<sup>')),
-    #         margin = list(b=0,t=50),
-    #         xaxis = list(side = "bottom"),legend = list(side="bottom"))
-
-
-
-      # layout(#legend = list(orientation = "h", x = 0.1, y = -0.3),
-      #        margin = list(b=0,t=150),
-      #                      title = list(paste0("Total de denuncias por violencia familiar \n",
-      #                                     violencia_familiar_diario_reactive()$zona,
-      #                                    '</sup>',
-      #                                    '<br>')))
+    #                                    '</sup>',
+    #                                    '<br>')))
     
     
   })  
@@ -1007,7 +1456,7 @@ server <- function(input, output) {
                 multiple = T)
   })
   
-
+  
   output$medidas_municipio <- renderUI({
     selectInput("medidas_municipio",
                 label =  "Selecciona el municipio",
@@ -1016,7 +1465,7 @@ server <- function(input, output) {
   })
   
   
-
+  
   medidas_reactive <- reactive({
     
     medidas_ordenes_municipal %>%
@@ -1031,61 +1480,63 @@ server <- function(input, output) {
   
   output$grafico_medidas <- renderPlotly ({
     
-  
+    
     medidas_reactive() %>% 
-    #medidas_ordenes_municipal %>% 
-    group_by(año, mes) %>% 
-    summarise(medidas=sum(medidas_aceptadas + medidas_rechazadas),
-              ordenes=sum(ordenes_aceptadas + ordenes_rechazadas)) %>% 
-    pivot_longer(cols=c("ordenes","medidas"),
-                 names_to = "tipo",
-                 values_to = "total")%>% 
-    mutate(fecha=case_when(
-      mes=="Enero"~ "01", 
-      mes=="Febrero"~"02", 
-      mes=="Marzo"~"03", 
-      mes=="Abril"~"04", 
-      mes=="Mayo"~"05", 
-      mes=="Junio"~"06",
-      mes=="Julio"~"07", 
-      mes=="Agosto"~"08", 
-      mes=="Septiembre"~"09", 
-      mes=="Octubre"~"10", 
-      mes=="Noviembre"~"11", 
-      mes=="Diciembre"~"12"),
-      fecha=paste0(año,"-", fecha)) %>%  
-    filter(tipo=="medidas") %>% 
-    ggplot() +
-    aes(x =fecha, y = total, color="#C91682") +
-    #geom_col()+
+      #medidas_ordenes_municipal %>% 
+      group_by(año, mes) %>% 
+      summarise(medidas=sum(medidas_aceptadas + medidas_rechazadas),
+                ordenes=sum(ordenes_aceptadas + ordenes_rechazadas),.groups = "drop") %>% 
+      pivot_longer(cols=c("ordenes","medidas"),
+                   names_to = "tipo",
+                   values_to = "total")%>% 
+      mutate(fecha=case_when(
+        mes=="Enero"~ "01", 
+        mes=="Febrero"~"02", 
+        mes=="Marzo"~"03", 
+        mes=="Abril"~"04", 
+        mes=="Mayo"~"05", 
+        mes=="Junio"~"06",
+        mes=="Julio"~"07", 
+        mes=="Agosto"~"08", 
+        mes=="Septiembre"~"09", 
+        mes=="Octubre"~"10", 
+        mes=="Noviembre"~"11", 
+        mes=="Diciembre"~"12"),
+        fecha=paste0(año,"-", fecha)) %>%  
+      filter(tipo=="medidas") %>% 
+      mutate(text = paste("Total de medidas: ", scales::comma(total), 
+                          "\nPeríodo: ", fecha, sep="")) %>% 
+      ggplot() +
+      aes(x =fecha, y = total, color="#C91682", text=text) +
+      #geom_col()+
       geom_point(color="#C91682", size=4, alpha=0.6) + 
       geom_segment(aes(x=fecha, xend=fecha, y=0, yend=total))+
-    #geom_line(size=1)+
-    # scale_fill_manual(
-    #   values = c(#ordenes = "#C91682"#,
-    #     medidas ="#C91682" #"#7E3794"
-    #   ))+
-    #   scale_color_manual(
-    #     values = c(#ordenes = "#C91682"#,
-    #       medidas ="#C91682" #"#7E3794"
-    #     ))+
-    scale_y_continuous(labels = scales::comma) +
-    #scale_x_discrete(labels = function(x) str_wrap(x, width = 15)) +
-    labs(title = paste("Total de medidas trabajadas"),
-         #violencia_familiar_diario_reactive()$municipio[1]),
-         x="Mes", y="Total", fill="Tipo", color="Tipo")+
-    #facet_grid(.~año, space = "free_x", scales = "free_x", switch="x") +
-    theme_minimal()+
-    theme(legend.position='none',
-      text=element_text(size=11,  family="Montserrat"),
-      plot.margin = margin(2, 2, 2, 2, "cm"),
-      strip.text.x = element_text(size = 12, face = "bold", angle=90),
-      plot.tag = element_text(size = 15L, hjust = 0, family="Montserrat"),
-      plot.title = element_text(size = 15L, hjust = 0.5, family="Montserrat"),
-      plot.caption = element_text(size = 12L, hjust = 0.5),
-      axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1, size=9))->gr_medidas
-  
-    ggplotly(gr_medidas) %>%
+      #geom_line(size=1)+
+      # scale_fill_manual(
+      #   values = c(#ordenes = "#C91682"#,
+      #     medidas ="#C91682" #"#7E3794"
+      #   ))+
+      #   scale_color_manual(
+      #     values = c(#ordenes = "#C91682"#,
+      #       medidas ="#C91682" #"#7E3794"
+      #     ))+
+      scale_y_continuous(labels = scales::comma) +
+      #scale_x_discrete(labels = function(x) str_wrap(x, width = 15)) +
+      labs(title = paste("Total de medidas trabajadas"),
+           #violencia_familiar_diario_reactive()$municipio[1]),
+           x="", y="Total", fill="Tipo", color="Tipo")+
+      #facet_grid(.~año, space = "free_x", scales = "free_x", switch="x") +
+      theme_minimal()+
+      theme(legend.position='none',
+            text=element_text(size=11,  family="Montserrat"),
+            plot.margin = margin(2, 2, 2, 2, "cm"),
+            strip.text.x = element_text(size = 12, face = "bold", angle=90),
+            plot.tag = element_text(size = 15L, hjust = 0, family="Montserrat"),
+            plot.title = element_text(size = 15L, hjust = 0.5, family="Montserrat"),
+            plot.caption = element_text(size = 12L, hjust = 0.5),
+            axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1, size=9))->gr_medidas
+    
+    ggplotly(gr_medidas, tooltip = "text") %>%
       layout(#legend = list(orientation = "h", x = 0.1, y = -0.3),
         margin = list(b=0,t=50),
         title = paste("Total de medidas de protección trabajadas \n",
@@ -1102,8 +1553,10 @@ server <- function(input, output) {
     
     if (input$mapa_medidas == "Año 2019") {
       
+      
       mxmunicipio_choropleth(medidas_2019, num_colors = 1,
-                             zoom = subset(medidas_2019, state_name %in% c("Jalisco"))$region,
+                             zoom = subset(medidas_2019, state_name %in% 
+                                             c("Jalisco"))$region,
                              show_states = FALSE, legend = "%")+ 
         labs(caption="", fill="Total", x="", y="") +
         scale_fill_gradient(
@@ -1126,7 +1579,8 @@ server <- function(input, output) {
     if (input$mapa_medidas == "Año 2020") {
       
       mxmunicipio_choropleth(medidas_2020, num_colors = 1,
-                             zoom = subset(medidas_2020, state_name %in% c("Jalisco"))$region,
+                             zoom = subset(medidas_2020, state_name %in% 
+                                             c("Jalisco"))$region ,
                              show_states = FALSE, legend = "%")+ 
         labs(caption="", fill="Total", x="", y="") +
         scale_fill_gradient(
@@ -1149,8 +1603,9 @@ server <- function(input, output) {
     if (input$mapa_medidas == "Año 2021") {
       
       mxmunicipio_choropleth(medidas_2021, num_colors = 1,
-                             zoom = subset(medidas_2021, state_name %in% c("Jalisco"))$region,
-                            show_states = FALSE, legend = "%")+ 
+                             zoom = subset(medidas_2021, state_name %in% 
+                                             c("Jalisco"))$region,
+                             show_states = FALSE, legend = "%")+ 
         labs(caption="", fill="Total", x="", y="") +
         scale_fill_gradient(
           low = "#e9e8eb", 
@@ -1169,11 +1624,11 @@ server <- function(input, output) {
               axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=1, size=10))-> mapa_1
     }
     
-    if (input$mapa_medidas == "Año 2022 (mayo)") {
+    if (input$mapa_medidas == "año 2022 (agosto)") {
       
       mxmunicipio_choropleth(medidas_2022, num_colors = 1,
-                             zoom = subset(medidas_2022, state_name %in% c("Jalisco"))$region,
-                            show_states = FALSE, legend = "%")+ 
+                             zoom = subset(medidas_2022, state_name %in% c("Jalisco"))$region, 
+                             show_states = FALSE, legend = "%")+ 
         labs(caption="", fill="Total", x=" ", y=" ", title = paste0("Total de medidas de protección otorgadas: \n",'<br>','<sup>', input$mapa_medidas)) +
         scale_fill_gradient(
           low = "#e9e8eb", 
@@ -1206,10 +1661,10 @@ server <- function(input, output) {
                     xanchor='right', yanchor='auto', xshift=0, yshift=4,
                     font=list(size=10,  color="#9443FF"))
       )
-      # layout(
-      #    title = list(text = paste0("Total de medidas de protección otorgadas: ", input$mapa_medidas 
-      #                               )),
-      #   margin = list(b=0,t=55))
+    # layout(
+    #    title = list(text = paste0("Total de medidas de protección otorgadas: ", input$mapa_medidas 
+    #                               )),
+    #   margin = list(b=0,t=55))
     
     # add_annotations(
     #   yref="paper", 
@@ -1294,7 +1749,7 @@ server <- function(input, output) {
       #medidas_ordenes_municipal %>% 
       group_by(año, mes) %>% 
       summarise(medidas=sum(medidas_aceptadas + medidas_rechazadas),
-                ordenes=sum(ordenes_aceptadas + ordenes_rechazadas)) %>% 
+                ordenes=sum(ordenes_aceptadas + ordenes_rechazadas),.groups = "drop") %>% 
       pivot_longer(cols=c("ordenes","medidas"),
                    names_to = "tipo",
                    values_to = "total")%>% 
@@ -1313,8 +1768,10 @@ server <- function(input, output) {
         mes=="Diciembre"~"12"),
         fecha=paste0(año,"-", fecha)) %>%  
       filter(tipo=="ordenes") %>% 
+      mutate(text = paste("Total de ordenes: ", scales::comma(total), 
+                          "\nPeríodo: ", fecha, sep="")) %>% 
       ggplot() +
-      aes(x =fecha, y = total, color="7E3794") +
+      aes(x =fecha, y = total, color="7E3794", text=text) +
       #geom_col()+
       geom_point(color="#7E3794", size=3, alpha=0.6) + 
       geom_segment(aes(x=fecha, xend=fecha, y=0, yend=total))+#, color="#b24dd1")+
@@ -1331,7 +1788,7 @@ server <- function(input, output) {
       #scale_x_discrete(labels = function(x) str_wrap(x, width = 15)) +
       labs(title = paste("Total de ordenes emitidas"),
            #violencia_familiar_diario_reactive()$municipio[1]),
-           x="Mes", y="Total", fill="Tipo", color="Tipo")+
+           x="", y="Total", fill="Tipo", color="Tipo")+
       #facet_grid(.~año, space = "free_x", scales = "free_x", switch="x") +
       theme_minimal()+
       theme(legend.position='none',
@@ -1343,7 +1800,7 @@ server <- function(input, output) {
             plot.caption = element_text(size = 12L, hjust = 0.5),
             axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1, size=9))->gr_ordenes
     
-    ggplotly(gr_ordenes) %>%
+    ggplotly(gr_ordenes, tooltip = "text") %>%
       layout(#legend = list(orientation = "h", x = 0.1, y = -0.3),
         margin = list(b=0,t=50),
         title = paste("Total de ordenes de protección emitidas \n",
@@ -1361,7 +1818,7 @@ server <- function(input, output) {
     if (input$mapa_ordenes == "Año 2019") {
       
       mxmunicipio_choropleth(ordenes_2019, num_colors = 1,
-                             zoom = subset(ordenes_2019, state_name %in% c("Jalisco"))$region,
+                             zoom = subset(ordenes_2019, state_name %in% c("Jalisco"))$region, 
                              show_states = FALSE, legend = "%")+ 
         labs(caption="", fill="Total", x="", y="") +
         scale_fill_gradient(
@@ -1384,7 +1841,7 @@ server <- function(input, output) {
     if (input$mapa_ordenes == "Año 2020") {
       
       mxmunicipio_choropleth(ordenes_2020, num_colors = 1,
-                             zoom = subset(ordenes_2020, state_name %in% c("Jalisco"))$region,
+                             zoom = subset(ordenes_2020, state_name %in% c("Jalisco"))$region, 
                              show_states = FALSE, legend = "%")+ 
         labs(caption="", fill="Total", x="", y="") +
         scale_fill_gradient(
@@ -1402,11 +1859,11 @@ server <- function(input, output) {
               plot.caption = element_text(size = 12L, hjust = 0),
               axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=1, size=10))-> mapa_2
     }
-
+    
     if (input$mapa_ordenes == "Año 2021") {
       
       mxmunicipio_choropleth(ordenes_2021, num_colors = 1,
-                             zoom = subset(ordenes_2021, state_name %in% c("Jalisco"))$region,
+                             zoom = subset(ordenes_2021, state_name %in% c("Jalisco"))$region, 
                              show_states = FALSE, legend = "%")+ 
         labs(caption="", fill="Total", x="", y="") +
         scale_fill_gradient(
@@ -1426,15 +1883,15 @@ server <- function(input, output) {
               axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=1, size=10))-> mapa_2
     }
     
-    if (input$mapa_ordenes == "Año 2022 (mayo)") {
+    if (input$mapa_ordenes == "año 2022 (agosto)") {
       
       mxmunicipio_choropleth(ordenes_2022, num_colors = 1,
-                             zoom = subset(ordenes_2022, state_name %in% c("Jalisco"))$region,
+                             zoom = subset(ordenes_2022, state_name %in% c("Jalisco"))$region, 
                              show_states = FALSE, legend = "%")+ 
         labs(caption="", fill="Total", x=" ", y=" ", 
              # title = paste0("Total de medidas de protección otorgadas: \n",'<br>','<sup>', 
              #                                                        input$mapa_medidas)
-             ) +
+        ) +
         scale_fill_gradient(
           low = "#e9e8eb", 
           high = "#7E3794",
@@ -1486,79 +1943,85 @@ server <- function(input, output) {
   })  
   
   
-# ---------------------------------------------------------------------------
+  # ---------------------------------------------------------------------------
   
   output$table_muertes <- renderDataTable ({
     
-    victimas_reactive() %>% 
-    group_by(Año, Subtipo.de.delito, Sexo) %>% 
-    filter(Subtipo.de.delito %in% c("Homicidio doloso", "Feminicidio"),
-           Sexo=="Mujer", Entidad=="Jalisco") %>% 
-    summarise(ene=sum(Enero, na.rm = T),
-              feb=sum(Febrero, na.rm = T),
-              mar=sum(Marzo, na.rm = T),
-              abr=sum(Abril, na.rm = T),
-              may=sum(Mayo, na.rm = T),
-              jun=sum(Junio, na.rm = T),
-              jul=sum(Julio, na.rm = T),
-              ago=sum(Agosto, na.rm = T),
-              sep=sum(Septiembre, na.rm = T),
-              oct=sum(Octubre, na.rm = T),
-              nov=sum(Noviembre, na.rm = T),
-              dic=sum(Diciembre, na.rm = T),
-              value=sum(ene+feb+mar+abr+ 
-                          may+jun+jul+ago+
-                          sep+oct+nov+dic)) %>% 
-    select(Año, Subtipo.de.delito, value) %>% 
-    pivot_wider(names_from = "Subtipo.de.delito",
-                values_from = "value") %>% 
-    summarise(
-      feminicidio=Feminicidio,
-      homicidio=`Homicidio doloso`,
-      total=sum(Feminicidio + `Homicidio doloso`), .groups = "drop") %>% 
-    mutate(variación = total - lag(total)) %>% 
-    datatable(
-      filter = 'top',
-      colnames = c('Año', 'Feminicidios', 
-                                  'Homicidios', 'Total','Variación'), 
-      
-      extensions = 'Buttons',
-      options = list(
-        
-        initComplete = JS(
-          "function(settings, json) {",
-          "$(this.api().table().header()).css({'background-color': '#C91682', 'color': '#fff', align:'center'});","}"),
-        
-        dom = 'Blfrtip',
-        buttons = c('copy', 'excel', 'print'),
-        lengthMenu = list(c(8,1,4,8, "All"),
-                          c(8,1,4,8, "All")),
-        columnDefs = list(list(className = 'dt-center', targets = 1:5)))) %>% 
-    formatCurrency('total',currency = "", interval = 3, mark = ",", digits = 0) %>% 
     
-    #formatStyle('entidad', target = "row", fontWeight = "bold") %>% 
-    #formatStyle("subtipo.de.delito", color = styleEqual(c("Homicidio doloso"), c("#5F55A0"))) %>% 
-    formatStyle(
-      columns = c(1:5),
-      fontFamily = "Montserrat",
-      fontSize = "11px",
-      #color = '#008080',
-      fontWeight = 'plain',
-      paddingRight = "0.5em",
-      borderRightWidth = "1px",
-      borderRightStyle = "solid",
-      borderRightColor = "white",
-      borderBottomColor = "#ffffff",
-      borderBottomStyle = "solid",
-      borderBottomWidth = "0.5px",
-      borderCollapse = "collapse",
-      verticalAlign = "middle",
-      textAlign = "center",
-      wordWrap = "break-word"#,
-      #backgroundColor = '#e6e6e5'
-    )
-  
-  
+    victimas_reactive() %>% 
+      #victimas %>% 
+      group_by(Año, Subtipo.de.delito, Sexo) %>% 
+      filter(Subtipo.de.delito %in% c("Homicidio doloso", "Feminicidio"),
+             Sexo=="Mujer", Entidad=="Jalisco") %>% 
+      summarise(ene=sum(Enero, na.rm = T),
+                feb=sum(Febrero, na.rm = T),
+                mar=sum(Marzo, na.rm = T),
+                abr=sum(Abril, na.rm = T),
+                may=sum(Mayo, na.rm = T),
+                jun=sum(Junio, na.rm = T),
+                jul=sum(Julio, na.rm = T),
+                ago=sum(Agosto, na.rm = T),
+                sep=sum(Septiembre, na.rm = T),
+                oct=sum(Octubre, na.rm = T),
+                nov=sum(Noviembre, na.rm = T),
+                dic=sum(Diciembre, na.rm = T),
+                value=sum(ene+feb+mar+abr+ 
+                            may+jun+jul+ago+
+                            sep+oct+nov+dic)) %>% 
+      select(Año, Subtipo.de.delito, value) %>% 
+      pivot_wider(names_from = "Subtipo.de.delito",
+                  values_from = "value") %>% 
+      summarise(
+        feminicidio=Feminicidio,
+        homicidio=`Homicidio doloso`,
+        total=sum(Feminicidio + `Homicidio doloso`), .groups = "drop") %>% 
+      mutate(variación = total - lag(total)) %>% 
+      select(Año, total, variación) %>% 
+      arrange(-Año) %>% 
+      datatable(
+        
+        filter = 'top',
+        colnames = c('Año', 
+                     #'Feminicidios','Homicidios', 
+                     'Total','Variación'), 
+        
+        extensions = 'Buttons',
+        options = list(
+          
+          initComplete = JS(
+            "function(settings, json) {",
+            "$(this.api().table().header()).css({'background-color': '#C91682', 'color': '#fff', align:'center'});","}"),
+          
+          dom = "tip",#'Blfrtip',
+          buttons = c('copy', 'excel', 'print'),
+          lengthMenu = list(c(8,1,4,8, "All"),
+                            c(8,1,4,8, "All")),
+          columnDefs = list(list(className = 'dt-center', targets = 1:3)))) %>% 
+      formatCurrency('total',currency = "", interval = 3, mark = ",", digits = 0) %>% 
+      
+      #formatStyle('entidad', target = "row", fontWeight = "bold") %>% 
+      #formatStyle("subtipo.de.delito", color = styleEqual(c("Homicidio doloso"), c("#5F55A0"))) %>% 
+      formatStyle(
+        columns = c(1:3),
+        fontFamily = "Montserrat",
+        fontSize = "11px",
+        #color = '#008080',
+        fontWeight = 'plain',
+        paddingRight = "0.5em",
+        borderRightWidth = "1px",
+        borderRightStyle = "solid",
+        borderRightColor = "white",
+        borderBottomColor = "#ffffff",
+        borderBottomStyle = "solid",
+        borderBottomWidth = "0.5px",
+        borderCollapse = "collapse",
+        verticalAlign = "middle",
+        textAlign = "center",
+        wordWrap = "break-word"#,
+        #backgroundColor = '#e6e6e5'
+      )
+    
+    
   })
   
   
@@ -1582,7 +2045,7 @@ server <- function(input, output) {
                 multiple = T)
   })
   
-
+  
   output$victimas_edad <- renderUI({
     selectInput("victimas_edad",
                 label =  "Selecciona el municipio",
@@ -1633,16 +2096,18 @@ server <- function(input, output) {
                 dic=sum(Diciembre, na.rm = T),
                 value=sum(ene+feb+mar+abr+ 
                             may+jun+jul+ago+
-                            sep+oct+nov+dic)) %>% 
+                            sep+oct+nov+dic),.groups = "drop") %>% 
       select(Año, Subtipo.de.delito, value) %>% 
-      
-      ggplot(aes(x=as.factor(Año), y=value, fill=Subtipo.de.delito))+
+      mutate(text = paste("Total de carpetas del delito: ", scales::comma(value), 
+                          "\nAño: ", Año,
+                          "\nDelito: ", Subtipo.de.delito, sep="")) %>% 
+      ggplot(aes(x=as.factor(Año), y=value, fill=Subtipo.de.delito, text=text))+
       geom_col(position="dodge2") +
       scale_fill_manual(values =
                           c(Feminicidio = "#C91682",
                             `Homicidio doloso` = "#7E3794"))+
       scale_y_continuous(labels = scales::comma) +
-      labs(x="Mes", y="Total de denuncias", fill="Delito", color="Delito")+
+      labs(x="", y="Total de denuncias", fill="Delito", color="Delito")+
       theme_minimal()+
       theme(text=element_text(size=11,  family="Montserrat"),
             plot.margin = margin(2, 2, 2, 2, "cm"),
@@ -1652,12 +2117,12 @@ server <- function(input, output) {
             plot.caption = element_text(size = 12L, hjust = 0.5),
             axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=1, size=11))->grafico_victimas
     
-    ggplotly(grafico_victimas) %>%
+    ggplotly(grafico_victimas, tooltip = "text") %>%
       layout(legend = list(orientation = "h", x = 0.1, y = -0.3),
              margin = list(b=0,t=30),
-        title = paste0("Total de víctimas \n", victimas_reactive()$Rango.de.edad, 
-                      '</sup>',
-                      '<br>'))
+             title = paste0("Total de víctimas \n", victimas_reactive()$Rango.de.edad, 
+                            '</sup>',
+                            '<br>'))
     
     
   })  
@@ -1670,35 +2135,43 @@ server <- function(input, output) {
   
   
   
-  output$regional_delito <- renderUI({
+  output$Regiónal_delito <- renderUI({
     selectInput("Delito",
                 label =  "Seleccione tipo de delito",
-                choices = sort(unique(regiones$Subtipo.de.delito)))
+                choices = sort(unique(Regiones$Subtipo.de.delito)))
   })
   
-  output$regional_region <- renderUI({
-    selectInput("Region",
-                label =  "Seleccione alguna region",
-                choices = sort(unique(regiones$Region)))
+  output$Regiónal_Región <- renderUI({
+    selectInput("Región",
+                label =  "Seleccione alguna Región",
+                choices = sort(unique(Regiones$Región)))
   })
   
   
   
-  regiones_data <- reactive({
+  Regiones_data <- reactive({
     
-    regiones %>%
-      filter(if(!is.null(input$regional_delito))  Subtipo.de.delito %in% input$regional_delito     else Subtipo.de.delito != "",
-             if(!is.null(input$regional_region))                      Region %in% input$regional_region              else Region != "")  
+    Regiones %>%
+      filter(if(!is.null(input$Regiónal_delito))  Subtipo.de.delito %in% input$Regiónal_delito     else Subtipo.de.delito != "",
+             if(!is.null(input$Regiónal_Región))                      Región %in% input$Regiónal_Región              else Región != "")  
   })
   
   
-  output$grafico_regional<- renderPlotly({
+  
+  output$grafico_Regiónal<- renderPlotly({
     
-    ggplot(regiones_data()) +
-      aes(x = as.factor(Año), y = Total, colour = Region) +
-      geom_line(aes(x=Año, y=Total, colour=Region),size=1) +
-      geom_point(aes(x=Año, y=Total, colour=Region), size=3)+
-      scale_color_viridis_d() +
+    Regiones_data() %>% 
+    mutate(text = paste("Total de carpetas del delito: ", scales::comma(Total), 
+                        "\nAño: ", Año,
+                        "\nDelito: ", Subtipo.de.delito,
+                        "\nRegión: ", Región, sep="")) %>% 
+    ggplot() +
+      aes(x = as.numeric(Año), y = Total, 
+          color = Región, fill= Región, group=1, text=text) +
+      geom_line(aes(x=Año, y=Total, color=Región),size=1) +
+      geom_point(aes(x=Año, y=Total, color=Región), size=3)+
+      scale_fill_manual(values = mycolors) +
+      scale_color_manual(values = mycolors)+
       labs(x="Año", y="Total")+
       scale_y_continuous(labels = scales::comma) +
       theme_minimal()+
@@ -1708,9 +2181,9 @@ server <- function(input, output) {
             plot.tag = element_text(size = 15L, hjust = 0, family="Montserrat"),
             plot.title = element_text(size = 15L, hjust = 0.5, family="Montserrat"),
             plot.caption = element_text(size = 12L, hjust = 0.5),
-            axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=1, size=11))->regional
+            axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=1, size=11))->Regiónal
     
-    ggplotly(regional)
+    ggplotly(Regiónal, tooltip="text")
     
     
     
@@ -1722,7 +2195,7 @@ server <- function(input, output) {
   output$municipal_delito <- renderUI({
     selectInput("municipal_delito",
                 label =  "Seleccione tipo de delito",
-                choices = sort(unique(municipios$Subtipo.de.delito)))
+                choices = sort(unique(municipios$Tipo.de.delito)))
   })
   output$municipal_municipio <- renderUI({
     selectInput("Municipio",
@@ -1745,12 +2218,21 @@ server <- function(input, output) {
   
   output$grafico_municipal<- renderPlotly({
     
-    ggplot(municipios_data()) +
-      aes(x =as.factor(Año), y = Total, colour = Municipio) +
+    municipios_data() %>% 
+    mutate(text = paste("Total de carpetas del delito: ", scales::comma(Total), 
+                        "\nAño: ", Año,
+                        "\nMunicipio: ", Municipio,
+                        "\nDelito: ", Subtipo.de.delito, sep="")) %>% 
+    ggplot() +
+      aes(x =as.numeric(Año), y = Total, 
+          color = Municipio, fill= Municipio, group=1, text=text) +
       geom_line(aes(x=Año, y=Total, colour=Municipio),size=1) +
       geom_point(aes(x=Año, y=Total, colour=Municipio), size=3)+
       labs(x="Año", y="Total")+
-      scale_color_viridis_d() +
+      #scale_color_brewer(palette = "mycolors")+
+      #scale_fill_brewer(palette = "mycolors")+      
+      scale_fill_manual(values = mycolors129) +
+      scale_color_manual(values = mycolors129)+
       scale_y_continuous(labels = scales::comma) +
       theme_minimal()+
       theme(text=element_text(size=11,  family="Montserrat"),
@@ -1761,11 +2243,307 @@ server <- function(input, output) {
             plot.caption = element_text(size = 12L, hjust = 0.5),
             axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=1, size=11))->municipal
     
-    ggplotly(municipal)
+    ggplotly(municipal, tooltip = "text")
     
     
   })
   
+  
+  ################################################################################
+  
+  
+  
+  output$atencion_año <- renderUI({
+    selectInput("Año",
+                label =  "Seleccione año",
+                choices = sort(unique(atenciones$año)))
+  })
+  
+  output$atencion_mes <- renderUI({
+    selectInput("Mes",
+                label =  "Seleccione mes",
+                choices = sort(unique(atenciones$Mes)))
+  })
+  
+  output$atencion_tipo <- renderUI({
+    selectInput("Tipo",
+                label =  "Seleccione tipo de violencia atendida",
+                choices = sort(unique(atenciones$tipo)))
+  })
+  
+  
+  output$atencion_unidad <- renderUI({
+    selectInput("Municipio",
+                label =  "Seleccione la unidad de atención",
+                choices = sort(unique(atenciones$Unidad)))
+  })
+  
+  
+  atenciones_reactive <- reactive({
+    
+    atenciones %>%
+      filter(if(!is.null(input$atencion_año))           año %in% input$atencion_año      else año != "",
+             if(!is.null(input$atencion_mes))           Mes %in% input$atencion_mes      else Mes != "",
+             if(!is.null(input$atencion_tipo))         tipo %in% input$atencion_tipo     else tipo != "",
+             if(!is.null(input$atencion_unidad))     Unidad %in% input$atencion_unidad   else Unidad != ""
+      )
+  })
+  
+  
+  output$total_atenciones_grafico <- renderPlotly({
+    
+    atenciones_reactive() %>% 
+      #atenciones %>% 
+      filter(año >= 2022,
+             mes != "2022-11") %>% 
+      #   pivot_longer(
+      #     cols=Psicológica:Digital,
+      #     names_to = "tipo", 
+      #     values_to = "total") %>% 
+      group_by(mes) %>% 
+      summarise(total=n(),.groups = "drop")%>% 
+      mutate(text = paste("Total de atenciones: ", scales::comma(total), 
+                          "\nPeríodo: ", mes, sep="")) %>% 
+      ggplot() +
+      aes(x =mes, y = total, text=text) +
+      #geom_col()+
+      geom_point(color="#C91682", size=6, alpha=0.6) + 
+      geom_segment(aes(x=mes, xend=mes, y=0, yend=total, color="#C91682"))+
+      scale_y_continuous(labels = scales::comma) +
+      labs(title = paste("Total de mujeres atendidas"),
+           #violencia_familiar_diario_reactive()$municipio[1]),
+           x="", y="", color="", fill="")+
+      #facet_grid(.~año, space = "free_x", scales = "free_x", switch="x") +
+      theme_minimal()+
+      theme(legend.position='none',
+            text=element_text(size=11,  family="Montserrat"),
+            plot.margin = margin(2, 2, 2, 2, "cm"),
+            strip.text.x = element_text(size = 12, face = "bold", angle=90),
+            plot.tag = element_text(size = 15L, hjust = 0, family="Montserrat"),
+            plot.title = element_text(size = 15L, hjust = 0.5, family="Montserrat"),
+            plot.caption = element_text(size = 12L, hjust = 0.5),
+            axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=1, size=9))->grafico_total_atenciones
+    
+    ggplotly(grafico_total_atenciones, tooltip = "text") %>%
+      layout(legend = list(orientation = "h", x = 0.1, y = -0.3),
+             margin = list(b=0,t=30),
+             title = paste0("Total de atenciones realizadas\n", 
+                            atenciones_reactive()$Unidad, 
+                            '</sup>',
+                            '<br>'))
+    
+    
+    
+  }) 
+  
+  
+  
+  
+  
+  
+  
+  output$atencion_año2 <- renderUI({
+    selectInput("Año",
+                label =  "Seleccione año",
+                choices = sort(unique(atenciones$año)))
+  })
+  
+  output$atencion_mes2 <- renderUI({
+    selectInput("Mes",
+                label =  "Seleccione mes",
+                choices = sort(unique(atenciones$Mes)))
+  })
+  
+  output$atencion_tipo2 <- renderUI({
+    selectInput("Tipo",
+                label =  "Seleccione tipo de violencia atendida",
+                choices = sort(unique(atenciones$tipo)))
+  })
+  
+  
+  output$atencion_unidad2 <- renderUI({
+    selectInput("Unidad",
+                label =  "Seleccione la unidad de atención",
+                choices = sort(unique(atenciones$Unidad)))
+  })
+  
+  
+  atenciones_reactive2 <- reactive({
+    
+    atenciones %>%
+      filter(if(!is.null(input$atencion_año2))           año %in% input$atencion_año2      else año != "",
+             if(!is.null(input$atencion_mes2))           Mes %in% input$atencion_mes2      else Mes != "",
+             if(!is.null(input$atencion_tipo2))         tipo %in% input$atencion_tipo2     else tipo != "",
+             if(!is.null(input$atencion_unidad2))     Unidad %in% input$atencion_unidad2   else Unidad != ""
+      )
+  })
+  
+  
+  
+  output$atenciones_mensuales<- renderPlotly({
+    
+    
+    atenciones_reactive2() %>% 
+      #atenciones %>%     
+      filter(año >= 2022,
+             mes != "2022-11") %>% 
+      # pivot_longer(
+      #   cols=Psicológica:Digital,
+      #   names_to = "tipo", 
+      #   values_to = "total") %>% 
+      filter(total >=0) %>% 
+      group_by(tipo)%>% 
+      mutate(total= as.numeric(total)) %>% 
+      summarise(total=sum(total, na.rm = T),.groups = "drop")%>% 
+      mutate(text = paste("Total de atenciones: ", scales::comma(total), 
+                          "\nTipo de violencia: ", tipo, sep="")) %>% 
+      ggplot()+
+      aes(x = reorder(tipo, total), y = total, fill=tipo, text=text) +
+      geom_col() +
+      scale_fill_manual(
+        values = c(
+          Psicológica = "#6737ab",
+          Económica = "#88419d",
+          Física = "#8c6bb1",
+          Patrimonial ="#8c96c6",
+          Sexual = "#9e9ac8",
+          Digital="#bcbddc"))+  
+      scale_y_continuous(labels = scales::comma) +
+      labs(x="", y="")+
+      coord_flip() +
+      theme_minimal()+
+      theme(legend.position='none',
+            text=element_text(size=11,  family="Montserrat"),
+            plot.margin = margin(2, 2, 2, 2, "cm"),
+            strip.text.x = element_text(size = 12, face = "bold", angle=90),
+            plot.tag = element_text(size = 15L, hjust = 0, family="Montserrat"),
+            plot.title = element_text(size = 15L, hjust = 0.5, family="Montserrat"),
+            plot.caption = element_text(size = 12L, hjust = 0.5),
+            axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=1, size=9))->grafico_anteciones_mensuales
+    
+    ggplotly(grafico_anteciones_mensuales, tooltip = "text") %>%
+      layout(legend = list(orientation = "h", x = 0.1, y = -0.3),
+             margin = list(b=0,t=30),
+             title = paste0("Total de atenciones realizadas\n", 
+                            atenciones_reactive()$Unidad, 
+                            '</sup>',
+                            '<br>'))
+    
+  })
+  
+  
+  # - - - - - - - -  - - - - - - - -  - - - - - - - -  - - - - - - - -
+  # - - - - - - - -  - - - - - - - -  - - - - - - - -  - - - - - - - -
+  # - - - - - - - -  - - - - - - - -  - - - - - - - -  - - - - - - - -
+  
+  
+  
+  output$atencion_año3 <- renderUI({
+    selectInput("Año",
+                label =  "Seleccione año",
+                choices = sort(unique(atenciones$año)))
+  })
+  
+  output$atencion_mes3 <- renderUI({
+    selectInput("Mes",
+                label =  "Seleccione mes",
+                choices = sort(unique(atenciones$Mes)))
+  })
+  
+  output$atencion_tipo3 <- renderUI({
+    selectInput("Tipo",
+                label =  "Seleccione tipo de violencia atendida",
+                choices = sort(unique(atenciones$tipo)))
+  })
+  
+  
+  output$atencion_unidad3 <- renderUI({
+    selectInput("Municipio",
+                label =  "Seleccione la unidad de atención",
+                choices = sort(unique(atenciones$Unidad)))
+  })
+  
+  
+  atenciones_reactive3 <- reactive({
+    
+    atenciones %>%
+      filter(if(!is.null(input$atencion_año3))           año %in% input$atencion_año3      else año != "",
+             if(!is.null(input$atencion_mes3))           Mes %in% input$atencion_mes3      else Mes != "",
+             if(!is.null(input$atencion_tipo3))         tipo %in% input$atencion_tipo3     else tipo != "",
+             if(!is.null(input$atencion_unidad3))     Unidad %in% input$atencion_unidad3   else Unidad != ""
+      )
+  })
+  
+  
+  output$atenciones_tipo<- renderPlotly({
+    
+    atenciones_reactive3() %>% 
+      filter(año >= 2022,
+             mes != "2022-11") %>% 
+      # pivot_longer(
+      #   cols=Psicológica:Digital,
+      #   names_to = "tipo", 
+      #   values_to = "total") %>% 
+      filter(total >=0) %>% 
+      group_by(mes, tipo)%>% 
+      mutate(total= as.numeric(total)) %>% 
+      summarise(total=sum(total, na.rm = T),.groups = "drop")%>% 
+      mutate(tipo=factor(tipo,
+                         levels=c("Psicológica", "Económica", "Física", "Patrimonial", "Sexual", "Digital"))) %>% 
+      filter(total !=0) %>% 
+      mutate(text = paste("Total de atenciones: ", scales::comma(total), 
+                          "\nTipo de violencia: ", tipo,
+                          "\nPeríodo: ", mes, sep="")) %>% 
+      ggplot()+
+      aes(x=mes, y=tipo, 
+          size=total, text=text)+  
+      geom_point(mapping=aes(colour=tipo))+
+      geom_text(aes(label=total, accuracy = 1),#hjust=.5, vjust=-.8,
+                size=4.5, color="ghostwhite")+
+      scale_y_discrete(limits = rev , 
+                       labels = function(x) str_wrap(x, width = 15)) + 
+      scale_size_continuous(range = c(2,20)) +
+      scale_fill_manual(
+        values = c(
+          Psicológica = "#6737ab",
+          Económica = "#88419d",
+          Física = "#8c6bb1",
+          Patrimonial ="#8c96c6",
+          Sexual = "#9e9ac8",
+          Digital="#bcbddc"))+
+      scale_color_manual(
+        values = c(
+          Psicológica = "#6737ab",
+          Económica = "#88419d",
+          Física = "#8c6bb1",
+          Patrimonial ="#8c96c6",
+          Sexual = "#9e9ac8",
+          Digital="#bcbddc"))+
+      labs(title="", 
+           x="", y="")+
+      theme_minimal()+
+      theme(legend.position = "none",
+            legend.key.height= unit(1.3, 'cm'),
+            legend.key.width= unit(1.3, 'cm'),
+            legend.title = element_text(size=14),
+            legend.text = element_text(size=12),
+            text=element_text(size=12, family="Montserrat"),
+            plot.title = element_text(size = 18L, hjust = 0, family="Montserrat"), 
+            plot.caption = element_text(size = 12L, hjust = 0),
+            strip.text.x = element_text(size = 11, color = "black", face = "bold.italic"),
+            axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=1, size=10))->grafico_anteciones_tipo
+    
+    ggplotly(grafico_anteciones_tipo, tooltip = "text") %>%
+      layout(legend = list(orientation = "h", x = 0.1, y = -0.3),
+             margin = list(b=0,t=30),
+             title = paste0("Total de atenciones realizadas\n", 
+                            atenciones_reactive()$Unidad, 
+                            '</sup>',
+                            '<br>'))
+    
+    
+    
+  })
   
   
   
